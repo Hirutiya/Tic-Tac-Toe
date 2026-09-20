@@ -1,15 +1,50 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include "game.h"
 #include "ui.h"
 #include "ai.h"
+#include "i18n.h"
 
 #define MODE_PVP 1
 #define MODE_PVE 2
 
-int main(void)
-{
+static void select_language(void) {
+    int choice;
+    printf("Select language / 選擇語言 / 选择语言:\n");
+    printf("1. English\n");
+    printf("2. 繁體中文\n");
+    printf("3. 简体中文\n");
+    printf("Choose (1/2/3): ");
+    scanf("%d", &choice);
+
+    switch (choice) {
+    case 1:
+        i18n_set_language(LANG_EN);
+        break;
+    case 2:
+        i18n_set_language(LANG_ZH_TW);
+        break;
+    case 3:
+        i18n_set_language(LANG_ZH_CN);
+        break;
+    default:
+        i18n_set_language(LANG_EN);
+        break;
+    }
+}
+
+int main(void) {
+    #ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    #endif
+
     char board[9];
     char current;
     char again;
@@ -17,66 +52,60 @@ int main(void)
 
     srand((unsigned)time(NULL));
 
-    printf("Tic Tac Toe\n");
-    printf("1. Player vs Player\n");
-    printf("2. Player vs Computer\n");
-    printf("Please select mode (1/2): ");
+    select_language();
+
+    printf("%s\n", i18n_get(STR_GAME_TITLE));
+    printf("%s\n", i18n_get(STR_MENU_MODE));
+    printf("%s\n", i18n_get(STR_MODE_PVP));
+    printf("%s\n", i18n_get(STR_MODE_PVE));
+    printf("%s", i18n_get(STR_INPUT_MODE));
     scanf("%d", &mode);
-    if (mode != MODE_PVP && mode != MODE_PVE)
-    {
+    if (mode != MODE_PVP && mode != MODE_PVE) {
         mode = MODE_PVE;
     }
 
-    do
-    {
+    do {
         init_board(board);
         current = PLAYER_X;
 
-        while (1)
-        {
+        while (1) {
             print_board(board);
-            printf("Player %c's turn\n", current);
+            printf(i18n_get(STR_TURN_PLAYER), current);
 
             int move;
-            if (mode == MODE_PVE && current == PLAYER_O)
-            {
-                printf("Computer is thinking...\n");
+            if (mode == MODE_PVE && current == PLAYER_O) {
+                printf("%s", i18n_get(STR_COMPUTER_THINKING));
                 move = ai_random_move(board);
-            }
-            else
-            {
+            } else {
                 move = get_move(board);
             }
 
-            if (move < 0 || move > 8)
-            {
-                printf("AI encountered an error, game over.\n");
+            if (move < 0 || move > 8) {
+                printf("%s", i18n_get(STR_AI_ERROR));
                 break;
             }
 
             board[move] = current;
 
             char winner = check_winner(board);
-            if (winner != EMPTY)
-            {
+            if (winner != EMPTY) {
                 print_board(board);
-                printf("Player %c wins!\n", winner);
+                printf(i18n_get(STR_PLAYER_WINS), winner);
                 break;
             }
-            if (is_full(board))
-            {
+            if (is_full(board)) {
                 print_board(board);
-                printf("Draw!\n");
+                printf("%s", i18n_get(STR_DRAW));
                 break;
             }
 
             current = (current == PLAYER_X) ? PLAYER_O : PLAYER_X;
         }
 
-        printf("\nPlay again? (y/n): ");
+        printf("\n%s", i18n_get(STR_PLAY_AGAIN));
         scanf(" %c", &again);
     } while (again == 'y' || again == 'Y');
 
-    printf("Goodbye!\n");
+    printf("%s", i18n_get(STR_GOODBYE));
     return 0;
 }
