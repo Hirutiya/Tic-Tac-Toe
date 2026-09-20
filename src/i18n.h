@@ -25,6 +25,8 @@ typedef enum {
     STR_AI_ERROR,
     STR_PLAY_AGAIN,
     STR_GOODBYE,
+    STR_INVALID_LANG_CHOICE,
+    STR_INVALID_MODE_CHOICE,
     STR_COUNT
 } StringID;
 

@@ -17,7 +17,9 @@ static const char *strings[LANG_COUNT][STR_COUNT] = {
         "Draw!\n",
         "AI error. Game over.\n",
         "Play again? (y/n): ",
-        "Goodbye!\n"
+        "Goodbye!\n",
+        "Invalid choice. Please enter 1, 2, or 3.\n",
+        "Invalid choice. Please enter 1 or 2.\n"
     },
     {
         "=== 井字棋 ===",
@@ -35,7 +37,9 @@ static const char *strings[LANG_COUNT][STR_COUNT] = {
         "平手！\n",
         "AI 發生錯誤，遊戲結束。\n",
         "要再玩一次嗎？(y/n): ",
-        "再見！\n"
+        "再見！\n",
+        "無效的選擇，請輸入 1、2 或 3。\n",
+        "無效的選擇，請輸入 1 或 2。\n"
     },
     {
         "=== 井字棋 ===",
@@ -53,7 +57,9 @@ static const char *strings[LANG_COUNT][STR_COUNT] = {
         "平局！\n",
         "AI 发生错误，游戏结束。\n",
         "要再玩一次吗？(y/n): ",
-        "再见！\n"
+        "再见！\n",
+        "无效的选择，请输入 1、2 或 3。\n",
+        "无效的选择，请输入 1 或 2。\n"
     }
 };
 

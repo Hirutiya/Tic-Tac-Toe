@@ -16,25 +16,30 @@
 
 static void select_language(void) {
     int choice;
-    printf("Select language / 選擇語言 / 选择语言:\n");
-    printf("1. English\n");
-    printf("2. 繁體中文\n");
-    printf("3. 简体中文\n");
-    printf("Choose (1/2/3): ");
-    scanf("%d", &choice);
+    while (1) {
+        printf("Select language / 選擇語言 / 选择语言:\n");
+        printf("1. English\n");
+        printf("2. 繁體中文\n");
+        printf("3. 简体中文\n");
+        printf("Choose (1/2/3): ");
 
-    switch (choice) {
-    case 1:
-        i18n_set_language(LANG_EN);
-        break;
-    case 2:
-        i18n_set_language(LANG_ZH_TW);
-        break;
-    case 3:
-        i18n_set_language(LANG_ZH_CN);
-        break;
-    default:
-        i18n_set_language(LANG_EN);
+        if (scanf("%d", &choice) != 1) {
+            int ch;
+            while ((ch = getchar()) != '\n' && ch != EOF) { }
+            printf("%s", i18n_get(STR_INVALID_LANG_CHOICE));
+            continue;
+        }
+
+        if (choice < 1 || choice > 3) {
+            printf("%s", i18n_get(STR_INVALID_LANG_CHOICE));
+            continue;
+        }
+
+        switch (choice) {
+            case 1: i18n_set_language(LANG_EN); break;
+            case 2: i18n_set_language(LANG_ZH_TW); break;
+            case 3: i18n_set_language(LANG_ZH_CN); break;
+        }
         break;
     }
 }
@@ -58,10 +63,21 @@ int main(void) {
     printf("%s\n", i18n_get(STR_MENU_MODE));
     printf("%s\n", i18n_get(STR_MODE_PVP));
     printf("%s\n", i18n_get(STR_MODE_PVE));
-    printf("%s", i18n_get(STR_INPUT_MODE));
-    scanf("%d", &mode);
-    if (mode != MODE_PVP && mode != MODE_PVE) mode = MODE_PVE;
 
+    while (1) {
+        printf("%s", i18n_get(STR_INPUT_MODE));
+        if (scanf("%d", &mode) != 1) {
+            int ch;
+            while ((ch = getchar()) != '\n' && ch != EOF) { }
+            printf("%s", i18n_get(STR_INVALID_MODE_CHOICE));
+            continue;
+        }
+        if (mode != MODE_PVP && mode != MODE_PVE) {
+            printf("%s", i18n_get(STR_INVALID_MODE_CHOICE));
+            continue;
+        }
+        break;
+    }
 
     do {
         init_board(board);
