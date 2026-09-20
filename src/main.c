@@ -90,7 +90,7 @@ int main(void) {
             int move;
             if (mode == MODE_PVE && current == PLAYER_O) {
                 printf("%s", i18n_get(STR_COMPUTER_THINKING));
-                move = ai_move(board, PLAYER_O, PLAYER_X);
+                move = ai_simple_move(board, PLAYER_O, PLAYER_X);
             } else {
                 move = get_move(board);
             }

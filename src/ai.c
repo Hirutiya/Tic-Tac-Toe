@@ -37,7 +37,7 @@ static int ai_random_move(const char board[9]) {
     return empty[rand() % count];
 }
 
-int ai_move(const char board[9], char ai_player, char component) {
+int ai_simple_move(const char board[9], char ai_player, char component) {
     int move;
 
     move = find_winning_move(board, ai_player);
