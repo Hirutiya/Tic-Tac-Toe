@@ -1,6 +1,6 @@
 #include "game.h"
 
-static const int WIN_PATTERNS[8][3] = {
+const int WIN_PATTERNS[8][3] = {
     {0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {0, 3, 6}, {1, 4, 7}, {2, 5, 8}, {0, 4, 8}, {2, 4, 6}
 };
 
@@ -15,9 +15,7 @@ char check_winner(const char board[9]) {
         int a = WIN_PATTERNS[i][0];
         int b = WIN_PATTERNS[i][1];
         int c = WIN_PATTERNS[i][2];
-        if (board[a] != EMPTY && board[a] == board[b] && board[a] == board[c]) {
-            return board[a];
-        }
+        if (board[a] != EMPTY && board[a] == board[b] && board[a] == board[c]) return board[a];
     }
     return EMPTY;
 }

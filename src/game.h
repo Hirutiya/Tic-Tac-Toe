@@ -11,4 +11,6 @@ char check_winner(const char board[9]);
 
 int is_full(const char board[9]);
 
+extern const int WIN_PATTERNS[8][3];
+
 #endif

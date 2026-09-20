@@ -60,9 +60,8 @@ int main(void) {
     printf("%s\n", i18n_get(STR_MODE_PVE));
     printf("%s", i18n_get(STR_INPUT_MODE));
     scanf("%d", &mode);
-    if (mode != MODE_PVP && mode != MODE_PVE) {
-        mode = MODE_PVE;
-    }
+    if (mode != MODE_PVP && mode != MODE_PVE) mode = MODE_PVE;
+
 
     do {
         init_board(board);
@@ -75,7 +74,7 @@ int main(void) {
             int move;
             if (mode == MODE_PVE && current == PLAYER_O) {
                 printf("%s", i18n_get(STR_COMPUTER_THINKING));
-                move = ai_random_move(board);
+                move = ai_move(board, PLAYER_O, PLAYER_X);
             } else {
                 move = get_move(board);
             }
