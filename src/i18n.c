@@ -5,8 +5,9 @@ static const char *strings[LANG_COUNT][STR_COUNT] = {
         "=== Tic-Tac-Toe ===",
         "Select mode:",
         "1. Player vs Player",
-        "2. Player vs Computer (You are X, AI is O)",
-        "Choose (1/2): ",
+        "2. Player vs Computer (Easy AI)",
+        "3. Player vs Computer (Hard AI)",
+        "Choose (1/2/3): ",
         "Player %c's turn\n",
         "Computer is thinking...\n",
         "Enter position (1-9): ",
@@ -19,14 +20,15 @@ static const char *strings[LANG_COUNT][STR_COUNT] = {
         "Play again? (y/n): ",
         "Goodbye!\n",
         "Invalid choice. Please enter 1, 2, or 3.\n",
-        "Invalid choice. Please enter 1 or 2.\n"
+        "Invalid choice. Please enter 1, 2, or 3.\n"
     },
     {
         "=== 井字棋 ===",
         "請選擇模式:",
         "1. 雙人對戰",
-        "2. 人機對戰 (玩家 X，電腦 O)",
-        "請選擇 (1/2): ",
+        "2. 人機對戰 (簡單 AI)",
+        "3. 人機對戰 (困難 AI)",
+        "請選擇 (1/2/3): ",
         "輪到玩家 %c\n",
         "電腦思考中...\n",
         "請輸入位置 (1-9): ",
@@ -39,14 +41,15 @@ static const char *strings[LANG_COUNT][STR_COUNT] = {
         "要再玩一次嗎？(y/n): ",
         "再見！\n",
         "無效的選擇，請輸入 1、2 或 3。\n",
-        "無效的選擇，請輸入 1 或 2。\n"
+        "無效的選擇，請輸入 1、2 或 3。\n"
     },
     {
         "=== 井字棋 ===",
         "请选择模式:",
         "1. 双人对战",
-        "2. 人机对战 (玩家 X，电脑 O)",
-        "请选择 (1/2): ",
+        "2. 人机对战 (简单 AI)",
+        "3. 人机对战 (困难 AI)",
+        "请选择 (1/2/3): ",
         "轮到玩家 %c\n",
         "电脑思考中...\n",
         "请输入位置 (1-9): ",
@@ -59,7 +62,7 @@ static const char *strings[LANG_COUNT][STR_COUNT] = {
         "要再玩一次吗？(y/n): ",
         "再见！\n",
         "无效的选择，请输入 1、2 或 3。\n",
-        "无效的选择，请输入 1 或 2。\n"
+        "无效的选择，请输入 1、2 或 3。\n"
     }
 };
 

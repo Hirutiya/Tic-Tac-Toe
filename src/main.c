@@ -12,7 +12,8 @@
 #include "i18n.h"
 
 #define MODE_PVP 1
-#define MODE_PVE 2
+#define MODE_PVE_EASY 2
+#define MODE_PVE_HARD 3
 
 static void select_language(void) {
     int choice;
@@ -62,7 +63,8 @@ int main(void) {
     printf("%s\n", i18n_get(STR_GAME_TITLE));
     printf("%s\n", i18n_get(STR_MENU_MODE));
     printf("%s\n", i18n_get(STR_MODE_PVP));
-    printf("%s\n", i18n_get(STR_MODE_PVE));
+    printf("%s\n", i18n_get(STR_MODE_PVE_EASY));
+    printf("%s\n", i18n_get(STR_MODE_PVE_HARD));
 
     while (1) {
         printf("%s", i18n_get(STR_INPUT_MODE));
@@ -72,7 +74,7 @@ int main(void) {
             printf("%s", i18n_get(STR_INVALID_MODE_CHOICE));
             continue;
         }
-        if (mode != MODE_PVP && mode != MODE_PVE) {
+        if (mode < 1 || mode > 3) {
             printf("%s", i18n_get(STR_INVALID_MODE_CHOICE));
             continue;
         }
@@ -88,9 +90,13 @@ int main(void) {
             printf(i18n_get(STR_TURN_PLAYER), current);
 
             int move;
-            if (mode == MODE_PVE && current == PLAYER_O) {
+            if ((mode == MODE_PVE_EASY || mode == MODE_PVE_HARD) && current == PLAYER_O) {
                 printf("%s", i18n_get(STR_COMPUTER_THINKING));
-                move = ai_simple_move(board, PLAYER_O, PLAYER_X);
+                if (mode == MODE_PVE_EASY) {
+                    move = ai_simple_move(board, PLAYER_O, PLAYER_X);
+                } else {
+                    move = ai_minimax_move(board, PLAYER_O, PLAYER_X);
+                }
             } else {
                 move = get_move(board);
             }
