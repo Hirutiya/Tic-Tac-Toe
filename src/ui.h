@@ -5,4 +5,6 @@ void print_board(const char board[9]);
 
 int get_move(const char board[9]);
 
+char get_player_side_choice(void);
+
 #endif

@@ -55,6 +55,8 @@ int main(void) {
     char current;
     char again;
     int mode;
+    char human_player = PLAYER_X;
+    char ai_player = PLAYER_O;
 
     srand((unsigned)time(NULL));
 
@@ -81,6 +83,11 @@ int main(void) {
         break;
     }
 
+    if (mode == MODE_PVE_EASY || mode == MODE_PVE_HARD) {
+        human_player = get_player_side_choice();
+        ai_player = (human_player == PLAYER_X) ? PLAYER_O : PLAYER_X;
+    }
+
     do {
         init_board(board);
         current = PLAYER_X;
@@ -90,7 +97,7 @@ int main(void) {
             printf(i18n_get(STR_TURN_PLAYER), current);
 
             int move;
-            if ((mode == MODE_PVE_EASY || mode == MODE_PVE_HARD) && current == PLAYER_O) {
+            if ((mode == MODE_PVE_EASY || mode == MODE_PVE_HARD) && current == ai_player) {
                 printf("%s", i18n_get(STR_COMPUTER_THINKING));
                 if (mode == MODE_PVE_EASY) {
                     move = ai_simple_move(board, PLAYER_O, PLAYER_X);

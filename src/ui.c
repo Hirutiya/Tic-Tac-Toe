@@ -38,3 +38,19 @@ int get_move(const char board[9]) {
         return pos - 1;
     }
 }
+
+char get_player_side_choice(void) {
+    int choice;
+    while (1) {
+        printf("%s", i18n_get(STR_CHOOSE_SIDE));
+        if (scanf("%d", &choice) != 1) {
+            int ch;
+            while ((ch = getchar()) != '\n' && ch != EOF) { }
+            printf("%s", i18n_get(STR_INVALID_SIDE_CHOICE));
+            continue;
+        }
+        if (choice == 1) return PLAYER_X;
+        if (choice == 2) return PLAYER_O;
+        printf("%s", i18n_get(STR_INVALID_SIDE_CHOICE));
+    }
+}
