@@ -1,9 +1,61 @@
 #include <windows.h>
+#include <stdio.h>
+#include "game.h"
+#include "ai.h"
 
 #define CELL_SIZE 150
 #define BOARD_SIZE (3 * CELL_SIZE)
 
-char board[9] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
+char board[9];
+char current_player;
+int game_over;
+
+void init_game() {
+    init_board(board);
+    current_player = PLAYER_X;
+    game_over = 0;
+}
+
+void check_game_over(HWND hwnd) {
+    char winner = check_winner(board);
+    if (winner != EMPTY) {
+        game_over = 1;
+        char msg[64];
+        sprintf(msg, "Player %c wins!", winner);
+        MessageBoxA(hwnd, msg, "Game Over", MB_OK | MB_ICONINFORMATION);
+    } else if (is_full(board)) {
+        game_over = 1;
+        MessageBoxA(hwnd, "Draw!", "Game Over", MB_OK | MB_ICONINFORMATION);
+    }
+}
+
+void make_ai_move(HWND hwnd) {
+    int move = ai_simple_move(board, PLAYER_O, PLAYER_X);
+
+    if (move >= 0 && move < 9 && board[move] == EMPTY) {
+        board[move] = PLAYER_O;
+        InvalidateRect(hwnd, NULL, TRUE);
+
+        check_game_over(hwnd);
+        if (!game_over) {
+            current_player = PLAYER_X;
+        }
+    }
+}
+
+void make_player_move(HWND hwnd, int index) {
+    if (game_over || current_player != PLAYER_X) return;
+    if (board[index] != EMPTY) return;
+
+    board[index] = PLAYER_X;
+    InvalidateRect(hwnd, NULL, TRUE);
+
+    check_game_over(hwnd);
+    if (!game_over) {
+        current_player = PLAYER_O;
+        make_ai_move(hwnd);
+    }
+}
 
 void DrawBoardLines(HDC hdc, int offsetX, int offsetY) {
     int i;
@@ -34,7 +86,7 @@ void DrawMarks(HDC hdc, int offsetX, int offsetY) {
         int x = offsetX + col * CELL_SIZE;
         int y = offsetY + row * CELL_SIZE;
 
-        if (board[i] == 'X') {
+        if (board[i] == PLAYER_X) {
             HPEN hPen = CreatePen(PS_SOLID, 5, RGB(200, 0, 0));
             HPEN hOldPen = SelectObject(hdc, hPen);
             MoveToEx(hdc, x + 20, y + 20, NULL);
@@ -43,7 +95,7 @@ void DrawMarks(HDC hdc, int offsetX, int offsetY) {
             LineTo(hdc, x + 20, y + CELL_SIZE - 20);
             SelectObject(hdc, hOldPen);
             DeleteObject(hPen);
-        } else if (board[i] == 'O') {
+        } else if (board[i] == PLAYER_O) {
             HPEN hPen = CreatePen(PS_SOLID, 5, RGB(0, 0, 200));
             HPEN hOldPen = SelectObject(hdc, hPen);
             HBRUSH hOldBrush = SelectObject(hdc, GetStockObject(NULL_BRUSH));
@@ -57,57 +109,54 @@ void DrawMarks(HDC hdc, int offsetX, int offsetY) {
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
-    case WM_PAINT: {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hwnd, &ps);
+        case WM_CREATE: init_game(); return 0;
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd, &ps);
 
-        RECT clientRect;
-        GetClientRect(hwnd, &clientRect);
-        int clientWidth = clientRect.right - clientRect.left;
-        int clientHeight = clientRect.bottom - clientRect.top;
+            RECT clientRect;
+            GetClientRect(hwnd, &clientRect);
+            int offsetX = ((clientRect.right - clientRect.left) - BOARD_SIZE) / 2;
+            int offsetY = ((clientRect.bottom - clientRect.top) - BOARD_SIZE) / 2;
 
-        int offsetX = (clientWidth - BOARD_SIZE) / 2;
-        int offsetY = (clientHeight - BOARD_SIZE) / 2;
+            DrawBoardLines(hdc, offsetX, offsetY);
+            DrawMarks(hdc, offsetX, offsetY);
 
-        DrawBoardLines(hdc, offsetX, offsetY);
-        DrawMarks(hdc, offsetX, offsetY);
+            EndPaint(hwnd, &ps);
+            return 0;
+        }
+        case WM_LBUTTONDOWN: {
+            RECT clientRect;
+            GetClientRect(hwnd, &clientRect);
+            int offsetX = ((clientRect.right - clientRect.left) - BOARD_SIZE) / 2;
+            int offsetY = ((clientRect.bottom - clientRect.top) - BOARD_SIZE) / 2;
 
-        EndPaint(hwnd, &ps);
-        return 0;
-    }
-    case WM_LBUTTONDOWN: {
-        RECT clientRect;
-        GetClientRect(hwnd, &clientRect);
-        int clientWidth = clientRect.right - clientRect.left;
-        int clientHeight = clientRect.bottom - clientRect.top;
+            int mouseX = LOWORD(lParam);
+            int mouseY = HIWORD(lParam);
+            int col = (mouseX - offsetX) / CELL_SIZE;
+            int row = (mouseY - offsetY) / CELL_SIZE;
 
-        int offsetX = (clientWidth - BOARD_SIZE) / 2;
-        int offsetY = (clientHeight - BOARD_SIZE) / 2;
-
-        int mouseX = LOWORD(lParam);
-        int mouseY = HIWORD(lParam);
-
-        int col = (mouseX - offsetX) / CELL_SIZE;
-        int row = (mouseY - offsetY) / CELL_SIZE;
-
-        if (col >= 0 && col < 3 && row >= 0 && row < 3) {
-            int index = row * 3 + col;
-            if (board[index] == ' ') {
-                board[index] = 'X';
+            if (col >= 0 && col < 3 && row >= 0 && row < 3) {
+                make_player_move(hwnd, row * 3 + col);
+            }
+            return 0;
+        }
+        case WM_KEYDOWN: {
+            if (wParam == 'R') {
+                init_game();
                 InvalidateRect(hwnd, NULL, TRUE);
             }
+            return 0;
         }
-        return 0;
-    }
-    case WM_GETMINMAXINFO: {
-        MINMAXINFO *mmi = (MINMAXINFO *)lParam;
-        RECT minRect = {0, 0, BOARD_SIZE + 20, BOARD_SIZE + 20};
-        AdjustWindowRect(&minRect, WS_OVERLAPPEDWINDOW, FALSE);
-        mmi->ptMinTrackSize.x = minRect.right - minRect.left;
-        mmi->ptMinTrackSize.y = minRect.bottom - minRect.top;
-        return 0;
-    }
-    case WM_DESTROY: PostQuitMessage(0); return 0;
+        case WM_GETMINMAXINFO: {
+            MINMAXINFO *mmi = (MINMAXINFO *)lParam;
+            RECT minRect = {0, 0, BOARD_SIZE + 20, BOARD_SIZE + 20};
+            AdjustWindowRect(&minRect, WS_OVERLAPPEDWINDOW, FALSE);
+            mmi->ptMinTrackSize.x = minRect.right - minRect.left;
+            mmi->ptMinTrackSize.y = minRect.bottom - minRect.top;
+            return 0;
+        }
+        case WM_DESTROY: PostQuitMessage(0); return 0;
     }
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
@@ -124,7 +173,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.lpszClassName = CLASS_NAME;
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-
     wc.style = CS_HREDRAW | CS_VREDRAW;
 
     if (!RegisterClass(&wc)) {
@@ -140,7 +188,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT,
         rect.right - rect.left, rect.bottom - rect.top,
-        NULL, NULL, hInstance, NULL);
+        NULL, NULL, hInstance, NULL
+    );
 
     if (hwnd == NULL) {
         MessageBox(NULL, "Window Creation Failed!", "Error", MB_ICONERROR);
