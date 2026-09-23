@@ -6,6 +6,9 @@
 #define CELL_SIZE 150
 #define BOARD_SIZE (3 * CELL_SIZE)
 #define BUTTON_AREA_HEIGHT 120
+#define ANIM_FRAMES 8
+#define ANIM_TIMER_ID 1
+#define ANIM_INTERVAL 25
 
 #define ID_BTN_PVP 101
 #define ID_BTN_EASY 102
@@ -30,6 +33,7 @@ int game_over;
 int win_line[3] = {-1, -1, -1};
 HWND hStatus;
 HFONT g_hStatusFont;
+int anim_frames[9];
 
 void update_status(void) {
     char buf[64];
@@ -52,6 +56,12 @@ void init_game(HWND hwnd) {
     current_player = PLAYER_X;
     game_over = 0;
     win_line[0] = win_line[1] = win_line[2] = -1;
+
+    for (int i = 0; i < 9; i++) {
+        anim_frames[i] = 0;
+    }
+    KillTimer(hwnd, ANIM_TIMER_ID);
+
     update_status();
 
     if (game_mode != MODE_PVP && ai_player == PLAYER_X) {
@@ -96,6 +106,10 @@ void make_ai_move(HWND hwnd) {
 
     if (move >= 0 && move < 9 && board[move] == EMPTY) {
         board[move] = ai_player;
+
+        anim_frames[move] = 1;
+        SetTimer(hwnd, ANIM_TIMER_ID, ANIM_INTERVAL, NULL);
+
         InvalidateRect(hwnd, NULL, TRUE);
 
         check_game_over(hwnd);
@@ -115,6 +129,10 @@ void make_player_move(HWND hwnd, int index) {
         return;
 
     board[index] = current_player;
+
+    anim_frames[index] = 1;
+    SetTimer(hwnd, ANIM_TIMER_ID, ANIM_INTERVAL, NULL);
+
     InvalidateRect(hwnd, NULL, TRUE);
 
     check_game_over(hwnd);
@@ -173,23 +191,35 @@ void DrawMarks(HDC hdc, int offsetX, int offsetY) {
 
         int row = i / 3;
         int col = i % 3;
-        int x = offsetX + col * CELL_SIZE;
-        int y = offsetY + row * CELL_SIZE;
+        int cx = offsetX + col * CELL_SIZE + CELL_SIZE / 2;
+        int cy = offsetY + row * CELL_SIZE + CELL_SIZE / 2;
+
+        int half = CELL_SIZE / 2 - 20;
+        if (anim_frames[i] > 0) {
+            int progess = anim_frames[i] * 100 / ANIM_FRAMES;
+            half = half * (30 + 70 * progess / 100) / 100;
+        }
+
+        int left = cx - half;
+        int top = cy - half;
+        int right  = cx + half;
+        int bottom = cy + half;
+
 
         if (board[i] == PLAYER_X) {
             HPEN hPen = CreatePen(PS_SOLID, 5, RGB(200, 0, 0));
             HPEN hOldPen = SelectObject(hdc, hPen);
-            MoveToEx(hdc, x + 20, y + 20, NULL);
-            LineTo(hdc, x + CELL_SIZE - 20, y + CELL_SIZE - 20);
-            MoveToEx(hdc, x + CELL_SIZE - 20, y + 20, NULL);
-            LineTo(hdc, x + 20, y + CELL_SIZE - 20);
+            MoveToEx(hdc, left, top, NULL);
+            LineTo(hdc, right, bottom);
+            MoveToEx(hdc, right, top, NULL);
+            LineTo(hdc, left, bottom);
             SelectObject(hdc, hOldPen);
             DeleteObject(hPen);
         } else if (board[i] == PLAYER_O) {
             HPEN hPen = CreatePen(PS_SOLID, 5, RGB(0, 0, 200));
             HPEN hOldPen = SelectObject(hdc, hPen);
             HBRUSH hOldBrush = SelectObject(hdc, GetStockObject(NULL_BRUSH));
-            Ellipse(hdc, x + 20, y + 20, x + CELL_SIZE - 20, y + CELL_SIZE - 20);
+            Ellipse(hdc, left, top, right, bottom);
             SelectObject(hdc, hOldBrush);
             SelectObject(hdc, hOldPen);
             DeleteObject(hPen);
@@ -321,6 +351,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         case WM_KEYDOWN: {
             if (wParam == 'R' || wParam == 'r') {
                 init_game(hwnd);
+                InvalidateRect(hwnd, NULL, TRUE);
+            }
+            return 0;
+        }
+
+        case WM_TIMER: {
+            if (wParam == ANIM_TIMER_ID) {
+                int any_active = 0;
+                for (int i = 0; i < 9; i++) {
+                    if (anim_frames[i] > 0) {
+                        anim_frames[i]++;
+                        if (anim_frames[i] > ANIM_FRAMES) {
+                            anim_frames[i] = 0;
+                        } else {
+                            any_active = 1;
+                        }
+                    }
+                }
+                if (!any_active)
+                    KillTimer(hwnd, ANIM_TIMER_ID);
                 InvalidateRect(hwnd, NULL, TRUE);
             }
             return 0;
