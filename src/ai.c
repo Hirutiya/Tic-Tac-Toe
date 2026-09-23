@@ -23,12 +23,19 @@ static int find_winning_move(const char board[9], char player)
 static int find_empty_corner(const char board[9])
 {
     const int corners[4] = {0, 2, 6, 8};
+    int empty_corners[4];
+    int count = 0;
+
     for (int i = 0; i < 4; i++)
     {
         if (board[corners[i]] == EMPTY)
-            return corners[i];
+            empty_corners[count++] = corners[i];
     }
-    return -1;
+
+    if (count == 0)
+        return -1;
+
+    return empty_corners[rand() % count];
 }
 
 static int ai_random_move(const char board[9])
@@ -131,7 +138,8 @@ static int minimax(char board[9], char current_player, char ai_player, int depth
 int ai_minimax_move(const char board[9], char ai_player, char opponent)
 {
     int best_score = -1000;
-    int best_move = -1;
+    int best_move[9];
+    int best_count = 0;
 
     for (int i = 0; i < 9; i++)
     {
@@ -147,9 +155,18 @@ int ai_minimax_move(const char board[9], char ai_player, char opponent)
             if (score > best_score)
             {
                 best_score = score;
-                best_move = i;
+                best_count = 0;
+                best_move[best_count++] = i;
+            }
+            else if (score == best_score)
+            {
+                best_move[best_count++] = i;
             }
         }
     }
-    return best_move;
+
+    if (best_count == 0)
+        return -1;
+
+    return best_move[rand() % best_count];
 }

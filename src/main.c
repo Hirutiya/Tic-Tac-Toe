@@ -1,5 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include "game.h"
 #include "ai.h"
 
@@ -473,6 +475,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 {
     (void)hPrevInstance;
     (void)lpCmdLine;
+
+    srand((unsigned)time(NULL));
 
     const char CLASS_NAME[] = "TicTacToeWindowClass";
 
