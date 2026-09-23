@@ -1,6 +1,6 @@
 # Tic-Tac-Toe
 
-A simple Tic-Tac-Toe game in C.
+A simple Tic-Tac-Toe game written in pure C for Windows.
 
 ## Build
 
@@ -8,12 +8,19 @@ A simple Tic-Tac-Toe game in C.
 
 - **Windows OS**
 - **GCC Compiler** (MinGW-w64 recommended, or MSYS2)
+- **windres** (comes with MinGW-w64)
 - **Terminal** (PowerShell, CMD, or Git Bash)
 
 ### Compile
 
+1. Compile the resource file
 ```bash
-gcc -Wall -Wextra -std=c11 src/main.c src/game.c src/ui.c src/ai.c src/i18n.c -o tic_tac_toe.exe
+windres icon.rc -o icon.o
+```
+
+2. Compile the application
+```bash
+gcc -Wall -Wextra -std=c11 -mwindows src/main.c src/game.c src/ai.c icon.o -o tic_tac_toe.exe -lgdi32 -luser32
 ```
 
 ### Run
