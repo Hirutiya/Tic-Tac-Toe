@@ -38,19 +38,23 @@ HFONT g_hStatusFont;
 int anim_frames[9];
 
 void update_status(void) {
-    char buf[64];
-    const char *test = "";
+    char buffer[64];
+    const char *text = "";
+    
     if (game_over) {
-        test = "Game Over - Press R or click Restart";
+        text = "Game Over - Press R or click Restart";
+    } else if (game_mode == MODE_PVP) {
+        sprintf(buffer, "Player %c's turn", current_player);
+        text = buffer;
     } else {
-        if (current_player == human_player || game_mode == MODE_PVP) {
-            sprintf(buf, "Player %c's turn", current_player);
-            test = buf;
+        if (current_player == human_player) {
+            sprintf(buffer, "You are %c - Your turn", human_player);
         } else {
-            test = "Computer is thinking...";
+            sprintf(buffer, "You are %c - Computer is thinking...", human_player);
         }
+        text = buffer;
     }
-    SetWindowTextA(hStatus, test);
+    SetWindowTextA(hStatus, text);
 }
 
 void init_game(HWND hwnd) {
@@ -63,6 +67,10 @@ void init_game(HWND hwnd) {
         anim_frames[i] = 0;
     }
     KillTimer(hwnd, ANIM_TIMER_ID);
+
+    BOOL is_pve = (game_mode == MODE_PVE_EASY || game_mode == MODE_PVE_HARD);
+    EnableWindow(GetDlgItem(hwnd, ID_BTN_X), is_pve);
+    EnableWindow(GetDlgItem(hwnd, ID_BTN_O), is_pve);
 
     update_status();
 
