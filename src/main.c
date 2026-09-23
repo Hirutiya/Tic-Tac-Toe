@@ -15,8 +15,6 @@
 #define ID_BTN_PVP 101
 #define ID_BTN_EASY 102
 #define ID_BTN_HARD 103
-#define ID_BTN_X 104
-#define ID_BTN_O 105
 #define ID_BTN_RESTART 106
 
 #define MODE_PVP 1
@@ -78,10 +76,6 @@ void init_game(HWND hwnd)
         anim_frames[i] = 0;
     }
     KillTimer(hwnd, ANIM_TIMER_ID);
-
-    BOOL is_pve = (game_mode == MODE_PVE_EASY || game_mode == MODE_PVE_HARD);
-    EnableWindow(GetDlgItem(hwnd, ID_BTN_X), is_pve);
-    EnableWindow(GetDlgItem(hwnd, ID_BTN_O), is_pve);
 
     update_status();
 
@@ -290,12 +284,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         CreateWindowA("BUTTON", "PVP", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_PVP, NULL, NULL);
         CreateWindowA("BUTTON", "Easy Mode", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_EASY, NULL, NULL);
         CreateWindowA("BUTTON", "Hard Mode", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_HARD, NULL, NULL);
-        CreateWindowA("BUTTON", "Player X", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_X, NULL, NULL);
-        CreateWindowA("BUTTON", "Player O", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_O, NULL, NULL);
         CreateWindowA("BUTTON", "Restart", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_RESTART, NULL, NULL);
 
         CheckRadioButton(hwnd, ID_BTN_PVP, ID_BTN_HARD, ID_BTN_PVP);
-        CheckRadioButton(hwnd, ID_BTN_X, ID_BTN_O, ID_BTN_X);
 
         init_game(hwnd);
         return 0;
@@ -311,25 +302,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         MoveWindow(hStatus, 0, height - BUTTON_AREA_HEIGHT - 30, width, 30, TRUE);
 
-        int row1y = height - BUTTON_AREA_HEIGHT + 10;
-        int row1TotalWidth = 3 * btnWidth + 2 * gap;
-        int row1StartX = (width - row1TotalWidth) / 2;
-        if (row1StartX < 10)
-            row1StartX = 10;
+        int rowY = height - BUTTON_AREA_HEIGHT + 40;
+        int TotalWidth = 4 * btnWidth + 3 * gap;
+        int startX = (width - TotalWidth) / 2;
+        if (startX < 10)
+            startX = 10;
 
-        MoveWindow(GetDlgItem(hwnd, ID_BTN_PVP), row1StartX, row1y, btnWidth, btnHeight, TRUE);
-        MoveWindow(GetDlgItem(hwnd, ID_BTN_EASY), row1StartX + btnWidth + gap, row1y, btnWidth, btnHeight, TRUE);
-        MoveWindow(GetDlgItem(hwnd, ID_BTN_HARD), row1StartX + 2 * (btnWidth + gap), row1y, btnWidth, btnHeight, TRUE);
-
-        int row2y = row1y + btnHeight + gap;
-        int row2TotalWidth = 3 * btnWidth + 2 * gap;
-        int row2StartX = (width - row2TotalWidth) / 2;
-        if (row2StartX < 10)
-            row2StartX = 10;
-
-        MoveWindow(GetDlgItem(hwnd, ID_BTN_X), row2StartX, row2y, btnWidth, btnHeight, TRUE);
-        MoveWindow(GetDlgItem(hwnd, ID_BTN_O), row2StartX + btnWidth + gap, row2y, btnWidth, btnHeight, TRUE);
-        MoveWindow(GetDlgItem(hwnd, ID_BTN_RESTART), row2StartX + 2 * (btnWidth + gap), row2y, btnWidth, btnHeight, TRUE);
+        MoveWindow(GetDlgItem(hwnd, ID_BTN_PVP), startX, rowY, btnWidth, btnHeight, TRUE);
+        MoveWindow(GetDlgItem(hwnd, ID_BTN_EASY), startX + btnWidth + gap, rowY, btnWidth, btnHeight, TRUE);
+        MoveWindow(GetDlgItem(hwnd, ID_BTN_HARD), startX + 2 * (btnWidth + gap), rowY, btnWidth, btnHeight, TRUE);
+        MoveWindow(GetDlgItem(hwnd, ID_BTN_RESTART), startX + 3 * (btnWidth + gap), rowY, btnWidth, btnHeight, TRUE);
 
         return 0;
     }
@@ -343,24 +325,36 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             game_mode = MODE_PVP;
             init_game(hwnd);
             break;
+
         case ID_BTN_EASY:
-            game_mode = MODE_PVE_EASY;
-            init_game(hwnd);
-            break;
         case ID_BTN_HARD:
-            game_mode = MODE_PVE_HARD;
+        {
+            int new_mode = (id == ID_BTN_EASY) ? MODE_PVE_EASY : MODE_PVE_HARD;
+            int was_pvp = (game_mode == MODE_PVP);
+            game_mode = new_mode;
+
+            if (was_pvp)
+            {
+                int result = MessageBoxA(hwnd, "Choose your side:\n\n"
+                                               "YES = Play as X (First)\n"
+                                               "NO  = Play as O (Second)",
+                                         "Choose Your Side", MB_YESNO | MB_ICONQUESTION);
+
+                if (result == IDYES)
+                {
+                    human_player = PLAYER_X;
+                    ai_player = PLAYER_O;
+                }
+                else
+                {
+                    human_player = PLAYER_O;
+                    ai_player = PLAYER_X;
+                }
+            }
             init_game(hwnd);
             break;
-        case ID_BTN_X:
-            human_player = PLAYER_X;
-            ai_player = PLAYER_O;
-            init_game(hwnd);
-            break;
-        case ID_BTN_O:
-            human_player = PLAYER_O;
-            ai_player = PLAYER_X;
-            init_game(hwnd);
-            break;
+        }
+
         case ID_BTN_RESTART:
             init_game(hwnd);
             break;
@@ -445,7 +439,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_GETMINMAXINFO:
     {
         MINMAXINFO *mmi = (MINMAXINFO *)lParam;
-        RECT minRect = {0, 0, 400, BOARD_SIZE + BUTTON_AREA_HEIGHT + 50};
+        RECT minRect = {0, 0, 460, BOARD_SIZE + BUTTON_AREA_HEIGHT + 50};
         AdjustWindowRect(&minRect, WS_OVERLAPPEDWINDOW, FALSE);
         mmi->ptMinTrackSize.x = minRect.right - minRect.left;
         mmi->ptMinTrackSize.y = minRect.bottom - minRect.top;
