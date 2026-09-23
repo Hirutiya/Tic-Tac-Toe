@@ -5,7 +5,7 @@
 
 #define CELL_SIZE 150
 #define BOARD_SIZE (3 * CELL_SIZE)
-#define BUTTON_AREA_HEIGHT 100
+#define BUTTON_AREA_HEIGHT 120
 
 #define ID_BTN_PVP 101
 #define ID_BTN_EASY 102
@@ -28,6 +28,8 @@ char board[9];
 char current_player;
 int game_over;
 int win_line[3] = {-1, -1, -1};
+HWND hStatus;
+HFONT g_hStatusFont;
 
 void update_status(void) {
     char buf[64];
@@ -200,6 +202,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         case WM_CREATE: {
             hStatus = CreateWindowA("STATIC", "", WS_CHILD | WS_VISIBLE | SS_CENTER, 0, 0, 0, 0, hwnd, NULL, NULL, NULL);
 
+            g_hStatusFont = CreateFontA(24, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Microsoft Yahei UI");
+            SendMessage(hStatus, WM_SETFONT, (WPARAM)g_hStatusFont, TRUE);
+
             CreateWindowA("BUTTON", "PVP", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_PVP, NULL, NULL);
             CreateWindowA("BUTTON", "Easy Mode", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_EASY, NULL, NULL);
             CreateWindowA("BUTTON", "Hard Mode", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_HARD, NULL, NULL);
@@ -221,7 +226,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             int btnHeight = 30;
             int gap = 10;
 
-            MoveWindow(hStatus, 0, height - BUTTON_AREA_HEIGHT - 20, width, 20, TRUE);
+            MoveWindow(hStatus, 0, height - BUTTON_AREA_HEIGHT - 30, width, 30, TRUE);
 
             int row1y = height - BUTTON_AREA_HEIGHT + 10;
             int row1TotalWidth = 3 * btnWidth + 2 * gap;
@@ -331,6 +336,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         }
 
         case WM_DESTROY:
+            if (g_hStatusFont)
+                DeleteObject(g_hStatusFont);
             PostQuitMessage(0);
             return 0;
     }
