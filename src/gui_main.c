@@ -18,6 +18,8 @@
 #define MODE_PVE_EASY 2
 #define MODE_PVE_HARD 3
 
+void make_ai_move(HWND hwnd);
+
 HWND hStatus;
 int game_mode = MODE_PVP;
 char human_player = PLAYER_X;
@@ -42,14 +44,14 @@ void update_status(void) {
     SetWindowTextA(hStatus, test);
 }
 
-void init_game() {
+void init_game(HWND hwnd) {
     init_board(board);
     current_player = PLAYER_X;
     game_over = 0;
     update_status();
 
     if (game_mode != MODE_PVP && ai_player == PLAYER_X) {
-
+        make_ai_move(hwnd);
     }
 }
 
@@ -168,16 +170,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             hStatus = CreateWindowA("STATIC", "", WS_CHILD | WS_VISIBLE | SS_CENTER, 0, 0, 0, 0, hwnd, NULL, NULL, NULL);
 
             CreateWindowA("BUTTON", "PVP", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_PVP, NULL, NULL);
-            CreateWindowA("BUTTON", "Easy AI", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_EASY, NULL, NULL);
-            CreateWindowA("BUTTON", "Hard AI", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_HARD, NULL, NULL);
-            CreateWindowA("BUTTON", "Play X", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_X, NULL, NULL);
-            CreateWindowA("BUTTON", "Play O", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_O, NULL, NULL);
+            CreateWindowA("BUTTON", "Easy Mode", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_EASY, NULL, NULL);
+            CreateWindowA("BUTTON", "Hard Mode", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_HARD, NULL, NULL);
+            CreateWindowA("BUTTON", "Player X", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_X, NULL, NULL);
+            CreateWindowA("BUTTON", "Player O", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_O, NULL, NULL);
             CreateWindowA("BUTTON", "Restart", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_RESTART, NULL, NULL);
 
             CheckRadioButton(hwnd, ID_BTN_PVP, ID_BTN_HARD, ID_BTN_PVP);
             CheckRadioButton(hwnd, ID_BTN_X, ID_BTN_O, ID_BTN_X);
 
-            init_game();
+            init_game(hwnd);
             return 0;
         }
 
@@ -218,28 +220,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             switch (id) {
                 case ID_BTN_PVP:
                     game_mode = MODE_PVP;
-                    init_game();
+                    init_game(hwnd);
                     break;
                 case ID_BTN_EASY:
                     game_mode = MODE_PVE_EASY;
-                    init_game();
+                    init_game(hwnd);
                     break;
                 case ID_BTN_HARD:
                     game_mode = MODE_PVE_HARD;
-                    init_game();
+                    init_game(hwnd);
                     break;
                 case ID_BTN_X:
                     human_player = PLAYER_X;
                     ai_player = PLAYER_O;
-                    init_game();
+                    init_game(hwnd);
                     break;
                 case ID_BTN_O:
                     human_player = PLAYER_O;
                     ai_player = PLAYER_X;
-                    init_game();
+                    init_game(hwnd);
                     break;
                 case ID_BTN_RESTART:
-                    init_game();
+                    init_game(hwnd);
                     break;
             }
             InvalidateRect(hwnd, NULL, TRUE);
@@ -282,7 +284,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
         case WM_KEYDOWN: {
             if (wParam == 'R' || wParam == 'r') {
-                init_game();
+                init_game(hwnd);
                 InvalidateRect(hwnd, NULL, TRUE);
             }
             return 0;
