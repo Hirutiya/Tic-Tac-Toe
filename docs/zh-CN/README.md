@@ -23,3 +23,7 @@ gcc -Wall -Wextra -std=c11 src/main.c src/game.c src/ui.c src/ai.c src/i18n.c -o
 ```bash
 ./tic_tac_toe.exe
 ```
+
+## 致谢
+
+应用程序图标：[Tic tac toe icons created by Magnific - Flaticon](https://www.flaticon.com/free-icons/tic-tac-toe)

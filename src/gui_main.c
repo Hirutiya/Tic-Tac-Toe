@@ -3,6 +3,8 @@
 #include "game.h"
 #include "ai.h"
 
+#define IDI_APP_ICON 201
+
 #define CELL_SIZE 150
 #define BOARD_SIZE (3 * CELL_SIZE)
 #define BUTTON_AREA_HEIGHT 120
@@ -400,7 +402,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     const char CLASS_NAME[] = "TicTacToeWindowClass";
 
-    WNDCLASS wc = {0};
+    WNDCLASSEX wc = {0};
+    wc.cbSize = sizeof(WNDCLASSEX);
     wc.lpfnWndProc = WndProc;
     wc.hInstance = hInstance;
     wc.lpszClassName = CLASS_NAME;
@@ -408,7 +411,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.style = CS_HREDRAW | CS_VREDRAW;
 
-    if (!RegisterClass(&wc)) {
+    wc.hIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_APP_ICON), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+    wc.hIconSm = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_APP_ICON), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_SHARED);
+
+    if (!RegisterClassEx(&wc)) {
         MessageBox(NULL, "Window Registration Failed!", "Error", MB_ICONERROR);
         return 0;
     }
