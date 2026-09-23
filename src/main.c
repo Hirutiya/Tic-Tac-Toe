@@ -11,6 +11,8 @@
 #define ANIM_FRAMES 8
 #define ANIM_TIMER_ID 1
 #define ANIM_INTERVAL 25
+#define AI_TIMER_ID 2
+#define AI_THINK_DELAY 500
 
 #define ID_BTN_PVP 101
 #define ID_BTN_EASY 102
@@ -22,6 +24,7 @@
 #define MODE_PVE_HARD 3
 
 void make_ai_move(HWND hwnd);
+void schedule_ai_move(HWND hwnd);
 
 HWND hStatus;
 int game_mode = MODE_PVP;
@@ -76,12 +79,13 @@ void init_game(HWND hwnd)
         anim_frames[i] = 0;
     }
     KillTimer(hwnd, ANIM_TIMER_ID);
+    KillTimer(hwnd, AI_TIMER_ID);
 
     update_status();
 
     if (game_mode != MODE_PVP && ai_player == PLAYER_X)
     {
-        make_ai_move(hwnd);
+        schedule_ai_move(hwnd);
     }
 }
 
@@ -116,6 +120,11 @@ void check_game_over(HWND hwnd)
         MessageBoxA(hwnd, "Draw!", "Game Over", MB_OK | MB_ICONINFORMATION);
     }
     update_status();
+}
+
+void schedule_ai_move(HWND hwnd)
+{
+    SetTimer(hwnd, AI_TIMER_ID, AI_THINK_DELAY, NULL);
 }
 
 void make_ai_move(HWND hwnd)
@@ -176,7 +185,7 @@ void make_player_move(HWND hwnd, int index)
         {
             current_player = ai_player;
             update_status();
-            make_ai_move(hwnd);
+            schedule_ai_move(hwnd);
         }
     }
 }
@@ -432,6 +441,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if (!any_active)
                 KillTimer(hwnd, ANIM_TIMER_ID);
             InvalidateRect(hwnd, NULL, TRUE);
+        }
+        else if (wParam == AI_TIMER_ID)
+        {
+            KillTimer(hwnd, AI_TIMER_ID);
+            make_ai_move(hwnd);
         }
         return 0;
     }
