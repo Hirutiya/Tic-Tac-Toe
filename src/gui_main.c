@@ -27,6 +27,7 @@ char ai_player = PLAYER_O;
 char board[9];
 char current_player;
 int game_over;
+int win_line[3] = {-1, -1, -1};
 
 void update_status(void) {
     char buf[64];
@@ -48,6 +49,7 @@ void init_game(HWND hwnd) {
     init_board(board);
     current_player = PLAYER_X;
     game_over = 0;
+    win_line[0] = win_line[1] = win_line[2] = -1;
     update_status();
 
     if (game_mode != MODE_PVP && ai_player == PLAYER_X) {
@@ -59,6 +61,19 @@ void check_game_over(HWND hwnd) {
     char winner = check_winner(board);
     if (winner != EMPTY) {
         game_over = 1;
+
+        for (int i = 0; i < 8; i++) {
+            int a = WIN_PATTERNS[i][0];
+            int b = WIN_PATTERNS[i][1];
+            int c = WIN_PATTERNS[i][2];
+            if (board[a] != EMPTY && board[a] == board[b] && board[a] == board[c]) {
+                win_line[0] = a;
+                win_line[1] = b;
+                win_line[2] = c;
+                break;
+            }
+        }
+
         char msg[64];
         sprintf(msg, "Player %c wins!", winner);
         MessageBoxA(hwnd, msg, "Game Over", MB_OK | MB_ICONINFORMATION);
@@ -134,6 +149,22 @@ void DrawBoardLines(HDC hdc, int offsetX, int offsetY) {
 
 void DrawMarks(HDC hdc, int offsetX, int offsetY) {
     int i;
+
+    if (game_over && win_line[0] != -1) {
+        HBRUSH hHightlight = CreateSolidBrush(RGB(120, 230, 120));
+        for (i = 0; i < 3; i++) {
+            int index = win_line[i];
+            int row = index / 3;
+            int col = index % 3;
+            int x = offsetX + col * CELL_SIZE;
+            int y = offsetY + row * CELL_SIZE;
+
+            RECT r = {x + 1, y + 1, x + CELL_SIZE - 1, y + CELL_SIZE - 1};
+            FillRect(hdc, &r, hHightlight);
+        }
+        DeleteObject(hHightlight);
+    }
+
     for (i = 0; i < 9; i++) {
         if (board[i] == ' ')
             continue;
@@ -186,7 +217,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         case WM_SIZE: {
             int width = LOWORD(lParam);
             int height = HIWORD(lParam);
-            int btnWidth = 80;
+            int btnWidth = 100;
             int btnHeight = 30;
             int gap = 10;
 
@@ -292,7 +323,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
         case WM_GETMINMAXINFO: {
             MINMAXINFO *mmi = (MINMAXINFO *)lParam;
-            RECT minRect = {0, 0, 320, BOARD_SIZE + BUTTON_AREA_HEIGHT + 50};
+            RECT minRect = {0, 0, 400, BOARD_SIZE + BUTTON_AREA_HEIGHT + 50};
             AdjustWindowRect(&minRect, WS_OVERLAPPEDWINDOW, FALSE);
             mmi->ptMinTrackSize.x = minRect.right - minRect.left;
             mmi->ptMinTrackSize.y = minRect.bottom - minRect.top;
