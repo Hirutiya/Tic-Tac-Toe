@@ -75,10 +75,12 @@ static const char *strings[LANG_COUNT][STR_COUNT] = {
 static Language current_lang = LANG_EN;
 
 void i18n_set_language(Language lang) {
-    if (lang >= 0 && lang < LANG_COUNT) current_lang = lang;
+    if (lang >= 0 && lang < LANG_COUNT)
+        current_lang = lang;
 }
 
 const char *i18n_get(StringID id) {
-    if (id < 0 || id >= STR_COUNT) return "???";
+    if (id < 0 || id >= STR_COUNT)
+        return "???";
     return strings[current_lang][id];
 }

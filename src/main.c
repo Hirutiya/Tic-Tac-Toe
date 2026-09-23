@@ -37,9 +37,15 @@ static void select_language(void) {
         }
 
         switch (choice) {
-            case 1: i18n_set_language(LANG_EN); break;
-            case 2: i18n_set_language(LANG_ZH_TW); break;
-            case 3: i18n_set_language(LANG_ZH_CN); break;
+            case 1: 
+                i18n_set_language(LANG_EN); 
+                break;
+            case 2: 
+                i18n_set_language(LANG_ZH_TW); 
+                break;
+            case 3: 
+                i18n_set_language(LANG_ZH_CN); 
+                break;
         }
         break;
     }

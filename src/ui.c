@@ -49,8 +49,10 @@ char get_player_side_choice(void) {
             printf("%s", i18n_get(STR_INVALID_SIDE_CHOICE));
             continue;
         }
-        if (choice == 1) return PLAYER_X;
-        if (choice == 2) return PLAYER_O;
+        if (choice == 1)
+            return PLAYER_X;
+        if (choice == 2)
+            return PLAYER_O;
         printf("%s", i18n_get(STR_INVALID_SIDE_CHOICE));
     }
 }
