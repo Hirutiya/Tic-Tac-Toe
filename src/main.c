@@ -160,6 +160,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             } else if (wParam == 'R' || wParam == 'r') {
                 app_start_game(hwnd, game_mode, human_player);
                 InvalidateRect(hwnd, NULL, TRUE);
+            } else if (wParam == VK_UP) {
+                app_move_cursor(0, -1);
+                InvalidateRect(hwnd, NULL, TRUE);
+            } else if (wParam == VK_DOWN) {
+                app_move_cursor(0, 1);
+                InvalidateRect(hwnd, NULL, TRUE);
+            } else if (wParam == VK_LEFT) {
+                app_move_cursor(-1, 0);
+                InvalidateRect(hwnd, NULL, TRUE);
+            } else if (wParam == VK_RIGHT) {
+                app_move_cursor(1, 0);
+                InvalidateRect(hwnd, NULL, TRUE);
+            } else if (wParam == VK_RETURN || wParam == VK_SPACE) {
+                app_player_move(hwnd, cursor_pos);
             }
             return 0;
         }

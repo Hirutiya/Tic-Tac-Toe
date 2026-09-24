@@ -24,6 +24,7 @@ extern int anim_frames[9];
 extern int score_x;
 extern int score_o;
 extern int score_draw;
+extern int cursor_pos;
 
 typedef void (*ScoreCallback)(int x, int o, int draw);
 
@@ -40,5 +41,7 @@ void app_player_move(HWND hwnd, int index);
 void app_on_animation_timer(HWND hwnd);
 
 void app_on_ai_timer(HWND hwnd);
+
+void app_move_cursor(int dx, int dy);
 
 #endif

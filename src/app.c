@@ -15,6 +15,7 @@ int anim_frames[9];
 int score_x = 0;
 int score_o = 0;
 int score_draw = 0;
+int cursor_pos = 4;
 
 static StatusCallback g_status_cb = NULL;
 static ScoreCallback g_score_cb = NULL;
@@ -121,6 +122,7 @@ void app_start_game(HWND hwnd, int mode, char human_side) {
     current_player = PLAYER_X;
     game_over = 0;
     win_line[0] = win_line[1] = win_line[2] = -1;
+    cursor_pos = 4;
 
     for (int i = 0; i < 9; i++)
         anim_frames[i] = 0;
@@ -181,4 +183,28 @@ void app_on_animation_timer(HWND hwnd) {
 void app_on_ai_timer(HWND hwnd) {
     KillTimer(hwnd, AI_TIMER_ID);
     make_ai_move(hwnd);
+}
+
+void app_move_cursor(int dx, int dy) {
+    if (game_over)
+        return;
+    if (game_mode != MODE_PVP && current_player != human_player)
+        return;
+
+    int row = cursor_pos / 3;
+    int col = cursor_pos % 3;
+
+    col += dx;
+    row += dy;
+
+    if (col < 0) 
+        col = 0;
+    if (col > 2) 
+        col = 2;
+    if (row < 0) 
+        row = 0;
+    if (row > 2) 
+        row = 2;
+
+    cursor_pos = row * 3 + col;
 }

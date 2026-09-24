@@ -93,4 +93,19 @@ void render_marks(HDC hdc, int offsetX, int offsetY) {
             DeleteObject(hPen);
         }
     }
+
+    if (!game_over && (game_mode == MODE_PVP || current_player == human_player)) {
+        int row = cursor_pos / 3;
+        int col = cursor_pos % 3;
+        int x = offsetX + col * CELL_SIZE;
+        int y = offsetY + row * CELL_SIZE;
+
+        HPEN hPen = CreatePen(PS_SOLID, 3, RGB(0, 150, 255));
+        HPEN hOldPen = SelectObject(hdc, hPen);
+        HBRUSH hOldBrush = SelectObject(hdc, GetStockObject(NULL_BRUSH));
+        Rectangle(hdc, x + 5, y + 5, x + CELL_SIZE - 5, y + CELL_SIZE - 5);
+        SelectObject(hdc, hOldBrush);
+        SelectObject(hdc, hOldPen);
+        DeleteObject(hPen);
+    }
 }
