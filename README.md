@@ -20,7 +20,7 @@ windres icon.rc -o icon.o
 
 2. Compile the application
 ```bash
-gcc -Wall -Wextra -std=c11 -mwindows src/main.c src/game.c src/ai.c icon.o -o tic_tac_toe.exe -lgdi32 -luser32
+gcc -Wall -Wextra -std=c11 -mwindows src/main.c src/app.c src/render.c src/game.c src/ai.c icon.o -o tic_tac_toe.exe -lgdi32 -luser32
 ```
 
 ### Run

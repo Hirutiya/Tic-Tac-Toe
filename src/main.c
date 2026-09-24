@@ -1,284 +1,23 @@
-#include <windows.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <windows.h>
+#include "app.h"
 #include "game.h"
-#include "ai.h"
+#include "render.h"
 
 #define IDI_APP_ICON 201
-
-#define CELL_SIZE 150
-#define BOARD_SIZE (3 * CELL_SIZE)
-#define BUTTON_AREA_HEIGHT 120
-#define ANIM_FRAMES 8
-#define ANIM_TIMER_ID 1
-#define ANIM_INTERVAL 25
-#define AI_TIMER_ID 2
-#define AI_THINK_DELAY 500
 
 #define ID_BTN_PVP 101
 #define ID_BTN_EASY 102
 #define ID_BTN_HARD 103
-#define ID_BTN_RESTART 106
+#define ID_BTN_RESTART 104
 
-#define MODE_PVP 1
-#define MODE_PVE_EASY 2
-#define MODE_PVE_HARD 3
-
-void make_ai_move(HWND hwnd);
-void schedule_ai_move(HWND hwnd);
-
-HWND hStatus;
-int game_mode = MODE_PVP;
-char human_player = PLAYER_X;
-char ai_player = PLAYER_O;
-char board[9];
-char current_player;
-int game_over;
-int win_line[3] = {-1, -1, -1};
 HWND hStatus;
 HFONT g_hStatusFont;
-int anim_frames[9];
 
-void update_status(void)
+static void on_status_changed(const char *text)
 {
-    char buffer[64];
-    const char *text = "";
-
-    if (game_over)
-    {
-        text = "Game Over - Press R or click Restart";
-    }
-    else if (game_mode == MODE_PVP)
-    {
-        sprintf(buffer, "Player %c's turn", current_player);
-        text = buffer;
-    }
-    else
-    {
-        if (current_player == human_player)
-        {
-            sprintf(buffer, "You are %c - Your turn", human_player);
-        }
-        else
-        {
-            sprintf(buffer, "You are %c - Computer is thinking...", human_player);
-        }
-        text = buffer;
-    }
     SetWindowTextA(hStatus, text);
-}
-
-void init_game(HWND hwnd)
-{
-    init_board(board);
-    current_player = PLAYER_X;
-    game_over = 0;
-    win_line[0] = win_line[1] = win_line[2] = -1;
-
-    for (int i = 0; i < 9; i++)
-    {
-        anim_frames[i] = 0;
-    }
-    KillTimer(hwnd, ANIM_TIMER_ID);
-    KillTimer(hwnd, AI_TIMER_ID);
-
-    update_status();
-
-    if (game_mode != MODE_PVP && ai_player == PLAYER_X)
-    {
-        schedule_ai_move(hwnd);
-    }
-}
-
-void check_game_over(HWND hwnd)
-{
-    char winner = check_winner(board);
-    if (winner != EMPTY)
-    {
-        game_over = 1;
-
-        for (int i = 0; i < 8; i++)
-        {
-            int a = WIN_PATTERNS[i][0];
-            int b = WIN_PATTERNS[i][1];
-            int c = WIN_PATTERNS[i][2];
-            if (board[a] != EMPTY && board[a] == board[b] && board[a] == board[c])
-            {
-                win_line[0] = a;
-                win_line[1] = b;
-                win_line[2] = c;
-                break;
-            }
-        }
-
-        char msg[64];
-        sprintf(msg, "Player %c wins!", winner);
-        MessageBoxA(hwnd, msg, "Game Over", MB_OK | MB_ICONINFORMATION);
-    }
-    else if (is_full(board))
-    {
-        game_over = 1;
-        MessageBoxA(hwnd, "Draw!", "Game Over", MB_OK | MB_ICONINFORMATION);
-    }
-    update_status();
-}
-
-void schedule_ai_move(HWND hwnd)
-{
-    SetTimer(hwnd, AI_TIMER_ID, AI_THINK_DELAY, NULL);
-}
-
-void make_ai_move(HWND hwnd)
-{
-    int move = -1;
-    if (game_mode == MODE_PVE_EASY)
-    {
-        move = ai_simple_move(board, ai_player, human_player);
-    }
-    else if (game_mode == MODE_PVE_HARD)
-    {
-        move = ai_minimax_move(board, ai_player, human_player);
-    }
-
-    if (move >= 0 && move < 9 && board[move] == EMPTY)
-    {
-        board[move] = ai_player;
-
-        anim_frames[move] = 1;
-        SetTimer(hwnd, ANIM_TIMER_ID, ANIM_INTERVAL, NULL);
-
-        InvalidateRect(hwnd, NULL, TRUE);
-
-        check_game_over(hwnd);
-        if (!game_over)
-        {
-            current_player = human_player;
-            update_status();
-        }
-    }
-}
-
-void make_player_move(HWND hwnd, int index)
-{
-    if (game_over)
-        return;
-    if (game_mode != MODE_PVP && current_player != human_player)
-        return;
-    if (board[index] != EMPTY)
-        return;
-
-    board[index] = current_player;
-
-    anim_frames[index] = 1;
-    SetTimer(hwnd, ANIM_TIMER_ID, ANIM_INTERVAL, NULL);
-
-    InvalidateRect(hwnd, NULL, TRUE);
-
-    check_game_over(hwnd);
-    if (!game_over)
-    {
-        if (game_mode == MODE_PVP)
-        {
-            current_player = (current_player == PLAYER_X) ? PLAYER_O : PLAYER_X;
-            update_status();
-        }
-        else
-        {
-            current_player = ai_player;
-            update_status();
-            schedule_ai_move(hwnd);
-        }
-    }
-}
-
-void DrawBoardLines(HDC hdc, int offsetX, int offsetY)
-{
-    int i;
-    HPEN hPen = CreatePen(PS_SOLID, 3, RGB(0, 0, 0));
-    HPEN hOldPen = SelectObject(hdc, hPen);
-
-    for (i = 1; i <= 2; i++)
-    {
-        MoveToEx(hdc, offsetX + i * CELL_SIZE, offsetY, NULL);
-        LineTo(hdc, offsetX + i * CELL_SIZE, offsetY + BOARD_SIZE);
-    }
-
-    for (i = 1; i <= 2; i++)
-    {
-        MoveToEx(hdc, offsetX, offsetY + i * CELL_SIZE, NULL);
-        LineTo(hdc, offsetX + BOARD_SIZE, offsetY + i * CELL_SIZE);
-    }
-
-    SelectObject(hdc, hOldPen);
-    DeleteObject(hPen);
-}
-
-void DrawMarks(HDC hdc, int offsetX, int offsetY)
-{
-    int i;
-
-    if (game_over && win_line[0] != -1)
-    {
-        HBRUSH hHightlight = CreateSolidBrush(RGB(120, 230, 120));
-        for (i = 0; i < 3; i++)
-        {
-            int index = win_line[i];
-            int row = index / 3;
-            int col = index % 3;
-            int x = offsetX + col * CELL_SIZE;
-            int y = offsetY + row * CELL_SIZE;
-
-            RECT r = {x + 1, y + 1, x + CELL_SIZE - 1, y + CELL_SIZE - 1};
-            FillRect(hdc, &r, hHightlight);
-        }
-        DeleteObject(hHightlight);
-    }
-
-    for (i = 0; i < 9; i++)
-    {
-        if (board[i] == ' ')
-            continue;
-
-        int row = i / 3;
-        int col = i % 3;
-        int cx = offsetX + col * CELL_SIZE + CELL_SIZE / 2;
-        int cy = offsetY + row * CELL_SIZE + CELL_SIZE / 2;
-
-        int half = CELL_SIZE / 2 - 20;
-        if (anim_frames[i] > 0)
-        {
-            int progess = anim_frames[i] * 100 / ANIM_FRAMES;
-            half = half * (30 + 70 * progess / 100) / 100;
-        }
-
-        int left = cx - half;
-        int top = cy - half;
-        int right = cx + half;
-        int bottom = cy + half;
-
-        if (board[i] == PLAYER_X)
-        {
-            HPEN hPen = CreatePen(PS_SOLID, 5, RGB(200, 0, 0));
-            HPEN hOldPen = SelectObject(hdc, hPen);
-            MoveToEx(hdc, left, top, NULL);
-            LineTo(hdc, right, bottom);
-            MoveToEx(hdc, right, top, NULL);
-            LineTo(hdc, left, bottom);
-            SelectObject(hdc, hOldPen);
-            DeleteObject(hPen);
-        }
-        else if (board[i] == PLAYER_O)
-        {
-            HPEN hPen = CreatePen(PS_SOLID, 5, RGB(0, 0, 200));
-            HPEN hOldPen = SelectObject(hdc, hPen);
-            HBRUSH hOldBrush = SelectObject(hdc, GetStockObject(NULL_BRUSH));
-            Ellipse(hdc, left, top, right, bottom);
-            SelectObject(hdc, hOldBrush);
-            SelectObject(hdc, hOldPen);
-            DeleteObject(hPen);
-        }
-    }
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -287,19 +26,27 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
     case WM_CREATE:
     {
-        hStatus = CreateWindowA("STATIC", "", WS_CHILD | WS_VISIBLE | SS_CENTER, 0, 0, 0, 0, hwnd, NULL, NULL, NULL);
+        hStatus = CreateWindowA("STATIC", "", WS_CHILD | WS_VISIBLE | SS_CENTER,
+                                0, 0, 0, 0, hwnd, NULL, NULL, NULL);
 
-        g_hStatusFont = CreateFontA(24, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Microsoft Yahei UI");
+        g_hStatusFont = CreateFontA(24, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
+                                    DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                                    CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Microsoft Yahei UI");
         SendMessage(hStatus, WM_SETFONT, (WPARAM)g_hStatusFont, TRUE);
 
-        CreateWindowA("BUTTON", "PVP", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_PVP, NULL, NULL);
-        CreateWindowA("BUTTON", "Easy Mode", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_EASY, NULL, NULL);
-        CreateWindowA("BUTTON", "Hard Mode", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_HARD, NULL, NULL);
-        CreateWindowA("BUTTON", "Restart", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_RESTART, NULL, NULL);
+        CreateWindowA("BUTTON", "PVP", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP,
+                      0, 0, 0, 0, hwnd, (HMENU)ID_BTN_PVP, NULL, NULL);
+        CreateWindowA("BUTTON", "Easy Mode", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
+                      0, 0, 0, 0, hwnd, (HMENU)ID_BTN_EASY, NULL, NULL);
+        CreateWindowA("BUTTON", "Hard Mode", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
+                      0, 0, 0, 0, hwnd, (HMENU)ID_BTN_HARD, NULL, NULL);
+        CreateWindowA("BUTTON", "Restart", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                      0, 0, 0, 0, hwnd, (HMENU)ID_BTN_RESTART, NULL, NULL);
 
         CheckRadioButton(hwnd, ID_BTN_PVP, ID_BTN_HARD, ID_BTN_PVP);
 
-        init_game(hwnd);
+        app_set_status_callback(on_status_changed);
+        app_start_game(hwnd, MODE_PVP, PLAYER_X);
         return 0;
     }
 
@@ -314,8 +61,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         MoveWindow(hStatus, 0, height - BUTTON_AREA_HEIGHT - 30, width, 30, TRUE);
 
         int rowY = height - BUTTON_AREA_HEIGHT + 40;
-        int TotalWidth = 4 * btnWidth + 3 * gap;
-        int startX = (width - TotalWidth) / 2;
+        int totalWidth = 4 * btnWidth + 3 * gap;
+        int startX = (width - totalWidth) / 2;
         if (startX < 10)
             startX = 10;
 
@@ -323,7 +70,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         MoveWindow(GetDlgItem(hwnd, ID_BTN_EASY), startX + btnWidth + gap, rowY, btnWidth, btnHeight, TRUE);
         MoveWindow(GetDlgItem(hwnd, ID_BTN_HARD), startX + 2 * (btnWidth + gap), rowY, btnWidth, btnHeight, TRUE);
         MoveWindow(GetDlgItem(hwnd, ID_BTN_RESTART), startX + 3 * (btnWidth + gap), rowY, btnWidth, btnHeight, TRUE);
-
         return 0;
     }
 
@@ -333,41 +79,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         switch (id)
         {
         case ID_BTN_PVP:
-            game_mode = MODE_PVP;
-            init_game(hwnd);
+            app_start_game(hwnd, MODE_PVP, PLAYER_X);
             break;
 
         case ID_BTN_EASY:
         case ID_BTN_HARD:
         {
-            int new_mode = (id == ID_BTN_EASY) ? MODE_PVE_EASY : MODE_PVE_HARD;
-            int was_pvp = (game_mode == MODE_PVP);
-            game_mode = new_mode;
+            int mode = (id == ID_BTN_EASY) ? MODE_PVE_EASY : MODE_PVE_HARD;
+            char side = human_player;
 
-            if (was_pvp)
+            if (game_mode == MODE_PVP)
             {
-                int result = MessageBoxA(hwnd, "Choose your side:\n\n"
-                                               "YES = Play as X (First)\n"
-                                               "NO  = Play as O (Second)",
-                                         "Choose Your Side", MB_YESNO | MB_ICONQUESTION);
-
-                if (result == IDYES)
-                {
-                    human_player = PLAYER_X;
-                    ai_player = PLAYER_O;
-                }
-                else
-                {
-                    human_player = PLAYER_O;
-                    ai_player = PLAYER_X;
-                }
+                int result = MessageBoxA(hwnd,
+                                         "Choose your side:\n\n"
+                                         "YES = Play as X (First)\n"
+                                         "NO  = Play as O (Second)",
+                                         "Choose Your Side",
+                                         MB_YESNO | MB_ICONQUESTION);
+                side = (result == IDYES) ? PLAYER_X : PLAYER_O;
             }
-            init_game(hwnd);
+            app_start_game(hwnd, mode, side);
             break;
         }
 
         case ID_BTN_RESTART:
-            init_game(hwnd);
+            app_start_game(hwnd, game_mode, human_player);
             break;
         }
         InvalidateRect(hwnd, NULL, TRUE);
@@ -379,14 +115,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
 
-        RECT clientRect;
-        GetClientRect(hwnd, &clientRect);
-        int availHeight = clientRect.bottom - clientRect.top - BUTTON_AREA_HEIGHT;
-        int offsetX = ((clientRect.right - clientRect.left) - BOARD_SIZE) / 2;
-        int offsetY = (availHeight - BOARD_SIZE) / 2;
-
-        DrawBoardLines(hdc, offsetX, offsetY);
-        DrawMarks(hdc, offsetX, offsetY);
+        int offsetX, offsetY;
+        render_get_offsets(hwnd, &offsetX, &offsetY);
+        render_board_lines(hdc, offsetX, offsetY);
+        render_marks(hdc, offsetX, offsetY);
 
         EndPaint(hwnd, &ps);
         return 0;
@@ -394,19 +126,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_LBUTTONDOWN:
     {
-        RECT clientRect;
-        GetClientRect(hwnd, &clientRect);
-        int availHeight = clientRect.bottom - clientRect.top - BUTTON_AREA_HEIGHT;
-        int offsetX = ((clientRect.right - clientRect.left) - BOARD_SIZE) / 2;
-        int offsetY = (availHeight - BOARD_SIZE) / 2;
-
-        int mouseX = LOWORD(lParam);
-        int mouseY = HIWORD(lParam);
-        int col = (mouseX - offsetX) / CELL_SIZE;
-        int row = (mouseY - offsetY) / CELL_SIZE;
-
-        if (col >= 0 && col < 3 && row >= 0 && row < 3)
-            make_player_move(hwnd, row * 3 + col);
+        int index = render_hit_test(hwnd, LOWORD(lParam), HIWORD(lParam));
+        if (index >= 0)
+            app_player_move(hwnd, index);
         return 0;
     }
 
@@ -414,7 +136,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         if (wParam == 'R' || wParam == 'r')
         {
-            init_game(hwnd);
+            app_start_game(hwnd, game_mode, human_player);
             InvalidateRect(hwnd, NULL, TRUE);
         }
         return 0;
@@ -424,30 +146,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         if (wParam == ANIM_TIMER_ID)
         {
-            int any_active = 0;
-            for (int i = 0; i < 9; i++)
-            {
-                if (anim_frames[i] > 0)
-                {
-                    anim_frames[i]++;
-                    if (anim_frames[i] > ANIM_FRAMES)
-                    {
-                        anim_frames[i] = 0;
-                    }
-                    else
-                    {
-                        any_active = 1;
-                    }
-                }
-            }
-            if (!any_active)
-                KillTimer(hwnd, ANIM_TIMER_ID);
-            InvalidateRect(hwnd, NULL, TRUE);
+            app_on_animation_timer(hwnd);
         }
         else if (wParam == AI_TIMER_ID)
         {
-            KillTimer(hwnd, AI_TIMER_ID);
-            make_ai_move(hwnd);
+            app_on_ai_timer(hwnd);
         }
         return 0;
     }
@@ -488,9 +191,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.style = CS_HREDRAW | CS_VREDRAW;
-
-    wc.hIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_APP_ICON), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
-    wc.hIconSm = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_APP_ICON), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_SHARED);
+    wc.hIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_APP_ICON),
+                                IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+    wc.hIconSm = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_APP_ICON),
+                                  IMAGE_ICON, GetSystemMetrics(SM_CXSMICON),
+                                  GetSystemMetrics(SM_CYSMICON), LR_SHARED);
 
     if (!RegisterClassEx(&wc))
     {
@@ -501,12 +206,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     RECT rect = {0, 0, 700, 650};
     AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
 
-    HWND hwnd = CreateWindowEx(
-        0, CLASS_NAME, "Tic-Tac-Toe",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        rect.right - rect.left, rect.bottom - rect.top,
-        NULL, NULL, hInstance, NULL);
+    HWND hwnd = CreateWindowEx(0, CLASS_NAME, "Tic-Tac-Toe",
+                               WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+                               rect.right - rect.left, rect.bottom - rect.top,
+                               NULL, NULL, hInstance, NULL);
 
     if (hwnd == NULL)
     {
