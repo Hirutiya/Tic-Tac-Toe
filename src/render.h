@@ -5,7 +5,7 @@
 
 #define CELL_SIZE 150
 #define BOARD_SIZE (3 * CELL_SIZE)
-#define BUTTON_AREA_HEIGHT 120
+#define BUTTON_AREA_HEIGHT 150
 
 void render_get_offsets(HWND hwnd, int *offsetX, int *offsetY);
 

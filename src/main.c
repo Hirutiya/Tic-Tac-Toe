@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <windows.h>
@@ -16,9 +17,17 @@
 
 HWND hStatus;
 HFONT g_hStatusFont;
+HWND hScore;
+HFONT g_hScoreFont;
 
 static void on_status_changed(const char *text) {
     SetWindowTextA(hStatus, text);
+}
+
+static void on_score_changed(int x, int o, int draw) {
+    char buffer[64];
+    sprintf(buffer, "X: %d    O: %d    Draw: %d", x, o, draw);
+    SetWindowTextA(hScore, buffer);
 }
 
 static void show_about(HWND hwnd) {
@@ -36,9 +45,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_CREATE: {
             hStatus = CreateWindowA("STATIC", "", WS_CHILD | WS_VISIBLE | SS_CENTER, 0, 0, 0, 0, hwnd, NULL, NULL, NULL);
+            hScore = CreateWindowA("STATIC", "", WS_CHILD | WS_VISIBLE | SS_CENTER, 0, 0, 0, 0, hwnd, NULL, NULL, NULL);
 
             g_hStatusFont = CreateFontA(24, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Microsoft Yahei UI");
             SendMessage(hStatus, WM_SETFONT, (WPARAM)g_hStatusFont, TRUE);
+
+            g_hScoreFont = CreateFontA(18, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Microsoft Yahei UI");
+            SendMessage(hScore, WM_SETFONT, (WPARAM)g_hScoreFont, TRUE);
 
             CreateWindowA("BUTTON", "PVP", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_PVP, NULL, NULL);
             CreateWindowA("BUTTON", "Easy Mode", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_EASY, NULL, NULL);
@@ -55,6 +68,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
             app_set_status_callback(on_status_changed);
             app_start_game(hwnd, MODE_PVP, PLAYER_X);
+            app_set_status_callback(on_status_changed);
+            app_set_score_callback(on_score_changed);
             return 0;
         }
 
@@ -65,9 +80,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             int btnHeight = 30;
             int gap = 10;
 
-            MoveWindow(hStatus, 0, height - BUTTON_AREA_HEIGHT - 30, width, 30, TRUE);
+            int statusY = height - 125;
+            int scoreY = height - 85;
+            int rowY = height - 50;
 
-            int rowY = height - BUTTON_AREA_HEIGHT + 40;
+            MoveWindow(hStatus, 0, statusY, width, 30, TRUE);
+            MoveWindow(hScore,  0, scoreY,  width, 25, TRUE);
+
             int totalWidth = 4 * btnWidth + 3 * gap;
             int startX = (width - totalWidth) / 2;
             if (startX < 10)
@@ -166,6 +185,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         case WM_DESTROY:
             if (g_hStatusFont)
                 DeleteObject(g_hStatusFont);
+            if (g_hScoreFont)
+                DeleteObject(g_hScoreFont);
             PostQuitMessage(0);
             return 0;
     }

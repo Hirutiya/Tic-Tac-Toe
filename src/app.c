@@ -12,11 +12,19 @@ char current_player;
 int game_over;
 int win_line[3] = {-1, -1, -1};
 int anim_frames[9];
+int score_x = 0;
+int score_o = 0;
+int score_draw = 0;
 
 static StatusCallback g_status_cb = NULL;
+static ScoreCallback g_score_cb = NULL;
 
 void app_set_status_callback(StatusCallback cb) {
     g_status_cb = cb;
+}
+
+void app_set_score_callback(ScoreCallback cb) {
+    g_score_cb = cb;
 }
 
 static void notify_status(void) {
@@ -39,10 +47,20 @@ static void notify_status(void) {
     }
 }
 
+static void notify_score(void) {
+    if (g_score_cb)
+        g_score_cb(score_x, score_o, score_draw);
+}
+
 static void check_game_over(HWND hwnd) {
     char winner = check_winner(board);
     if (winner != EMPTY) {
         game_over = 1;
+        if (winner == PLAYER_X) {
+            score_x++;
+        } else if (winner == PLAYER_O) {
+            score_o++;
+        }
         for (int i = 0; i < 8; i++) {
             int a = WIN_PATTERNS[i][0];
             int b = WIN_PATTERNS[i][1];
@@ -59,8 +77,10 @@ static void check_game_over(HWND hwnd) {
         MessageBoxA(hwnd, msg, "Game Over", MB_OK | MB_ICONINFORMATION);
     } else if (is_full(board)) {
         game_over = 1;
+        score_draw++;
         MessageBoxA(hwnd, "Draw!", "Game Over", MB_OK | MB_ICONINFORMATION);
     }
+    notify_score();
     notify_status();
 }
 
@@ -87,6 +107,12 @@ static void make_ai_move(HWND hwnd) {
 }
 
 void app_start_game(HWND hwnd, int mode, char human_side) {
+    if (mode != game_mode) {
+        score_x = 0;
+        score_o = 0;
+        score_draw = 0;
+    }
+
     game_mode = mode;
     human_player = human_side;
     ai_player = (human_side == PLAYER_X) ? PLAYER_O : PLAYER_X;
@@ -102,6 +128,7 @@ void app_start_game(HWND hwnd, int mode, char human_side) {
     KillTimer(hwnd, AI_TIMER_ID);
 
     notify_status();
+    notify_score();
 
     if (game_mode != MODE_PVP && ai_player == PLAYER_X) {
         SetTimer(hwnd, AI_TIMER_ID, AI_THINK_DELAY, NULL);

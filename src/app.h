@@ -21,6 +21,13 @@ extern char current_player;
 extern int game_over;
 extern int win_line[3];
 extern int anim_frames[9];
+extern int score_x;
+extern int score_o;
+extern int score_draw;
+
+typedef void (*ScoreCallback)(int x, int o, int draw);
+
+void app_set_score_callback(ScoreCallback cb);
 
 typedef void (*StatusCallback)(const char *text);
 
