@@ -16,6 +16,7 @@ int score_x = 0;
 int score_o = 0;
 int score_draw = 0;
 int cursor_pos = 4;
+int hover_pos = -1;
 
 static StatusCallback g_status_cb = NULL;
 static ScoreCallback g_score_cb = NULL;
@@ -123,6 +124,7 @@ void app_start_game(HWND hwnd, int mode, char human_side) {
     game_over = 0;
     win_line[0] = win_line[1] = win_line[2] = -1;
     cursor_pos = 4;
+    hover_pos = -1;
 
     for (int i = 0; i < 9; i++)
         anim_frames[i] = 0;

@@ -25,6 +25,7 @@ extern int score_x;
 extern int score_o;
 extern int score_draw;
 extern int cursor_pos;
+extern int hover_pos;
 
 typedef void (*ScoreCallback)(int x, int o, int draw);
 

@@ -154,6 +154,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             return 0;
         }
 
+        case WM_MOUSEMOVE: {
+            int index = render_hit_test(hwnd, LOWORD(lParam), HIWORD(lParam));
+            if (index != hover_pos) {
+                hover_pos = index;
+                InvalidateRect(hwnd, NULL, TRUE);
+            }
+            return 0;
+        }
+
         case WM_KEYDOWN: {
             if (wParam == VK_F1) {
                 show_about(hwnd);
