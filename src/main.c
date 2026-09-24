@@ -12,12 +12,29 @@
 #define ID_BTN_HARD 103
 #define ID_BTN_RESTART 104
 
+#define IDM_ABOUT 2001
+
 HWND hStatus;
 HFONT g_hStatusFont;
 
 static void on_status_changed(const char *text)
 {
     SetWindowTextA(hStatus, text);
+}
+
+static void show_about(HWND hwnd)
+{
+    MessageBoxA(hwnd,
+                "Tic-Tac-Toe v0.7\n\n"
+                "A simple Tic-Tac-Toe game written in pure C.\n\n"
+                "Shortcuts:\n"
+                "- R: Restart\n"
+                "- F1: About\n\n"
+                "Author: Hirutiya\n\n"
+                "Icon: Tic tac toe icons created by Magnific - Flaticon\n"
+                "https://www.flaticon.com/free-icons/tic-tac-toe",
+                "About",
+                MB_OK | MB_ICONINFORMATION);
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -44,6 +61,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                       0, 0, 0, 0, hwnd, (HMENU)ID_BTN_RESTART, NULL, NULL);
 
         CheckRadioButton(hwnd, ID_BTN_PVP, ID_BTN_HARD, ID_BTN_PVP);
+
+        HMENU hMenu = CreateMenu();
+        HMENU hHelpMenu = CreatePopupMenu();
+        AppendMenuA(hHelpMenu, MF_STRING, IDM_ABOUT, "About");
+        AppendMenuA(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hHelpMenu, "Help");
+        SetMenu(hwnd, hMenu);
 
         app_set_status_callback(on_status_changed);
         app_start_game(hwnd, MODE_PVP, PLAYER_X);
@@ -105,6 +128,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case ID_BTN_RESTART:
             app_start_game(hwnd, game_mode, human_player);
             break;
+
+        case IDM_ABOUT:
+            show_about(hwnd);
+            break;
         }
         InvalidateRect(hwnd, NULL, TRUE);
         return 0;
@@ -134,7 +161,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_KEYDOWN:
     {
-        if (wParam == 'R' || wParam == 'r')
+        if (wParam == VK_F1)
+        {
+            show_about(hwnd);
+        }
+        else if (wParam == 'R' || wParam == 'r')
         {
             app_start_game(hwnd, game_mode, human_player);
             InvalidateRect(hwnd, NULL, TRUE);
