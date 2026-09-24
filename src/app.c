@@ -16,7 +16,6 @@ int score_x = 0;
 int score_o = 0;
 int score_draw = 0;
 int cursor_pos = 4;
-int hover_pos = -1;
 
 static StatusCallback g_status_cb = NULL;
 static ScoreCallback g_score_cb = NULL;
@@ -124,7 +123,6 @@ void app_start_game(HWND hwnd, int mode, char human_side) {
     game_over = 0;
     win_line[0] = win_line[1] = win_line[2] = -1;
     cursor_pos = 4;
-    hover_pos = -1;
 
     for (int i = 0; i < 9; i++)
         anim_frames[i] = 0;
@@ -209,4 +207,15 @@ void app_move_cursor(int dx, int dy) {
         row = 2;
 
     cursor_pos = row * 3 + col;
+}
+
+void app_set_cursor(int index) {
+    if (index < 0 || index > 8)
+        return;
+    if (game_over)
+        return;
+    if (game_mode != MODE_PVP && current_player != human_player)
+        return;
+    
+    cursor_pos = index;
 }

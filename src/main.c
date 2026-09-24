@@ -156,8 +156,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
         case WM_MOUSEMOVE: {
             int index = render_hit_test(hwnd, LOWORD(lParam), HIWORD(lParam));
-            if (index != hover_pos) {
-                hover_pos = index;
+            if (index >= 0 && index != cursor_pos) {
+                app_set_cursor(index);
                 InvalidateRect(hwnd, NULL, TRUE);
             }
             return 0;

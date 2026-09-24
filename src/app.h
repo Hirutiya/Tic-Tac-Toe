@@ -25,7 +25,6 @@ extern int score_x;
 extern int score_o;
 extern int score_draw;
 extern int cursor_pos;
-extern int hover_pos;
 
 typedef void (*ScoreCallback)(int x, int o, int draw);
 
@@ -44,5 +43,7 @@ void app_on_animation_timer(HWND hwnd);
 void app_on_ai_timer(HWND hwnd);
 
 void app_move_cursor(int dx, int dy);
+
+void app_set_cursor(int index);
 
 #endif

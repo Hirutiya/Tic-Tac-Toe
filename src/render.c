@@ -131,17 +131,11 @@ void render_marks(HDC hdc, int offsetX, int offsetY) {
         }
     }
 
-     int show_preview = !game_over && (game_mode == MODE_PVP || current_player == human_player);
+    int show_preview = !game_over && (game_mode == MODE_PVP || current_player == human_player);
 
-     if (show_preview) {
+    if (show_preview) {
         draw_preview(hdc, cursor_pos, offsetX, offsetY, current_player);
 
-        if (hover_pos >= 0 && hover_pos < 9) {
-            draw_preview(hdc, hover_pos, offsetX, offsetY, current_player);
-        }
-     }
-
-     if (show_preview) {
         int row = cursor_pos / 3;
         int col = cursor_pos % 3;
         int x = offsetX + col * CELL_SIZE;
@@ -154,5 +148,5 @@ void render_marks(HDC hdc, int offsetX, int offsetY) {
         SelectObject(hdc, hOldBrush);
         SelectObject(hdc, hOldPen);
         DeleteObject(hPen);
-     }
+    }
 }
