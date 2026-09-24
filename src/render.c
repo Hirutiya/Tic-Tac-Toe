@@ -100,6 +100,36 @@ void render_marks(HDC hdc, int offsetX, int offsetY) {
         int x = offsetX + col * CELL_SIZE;
         int y = offsetY + row * CELL_SIZE;
 
+        if (board[cursor_pos] == EMPTY) {
+            int cx = x + CELL_SIZE / 2;
+            int cy = y + CELL_SIZE / 2;
+            int half = CELL_SIZE / 2 - 20;
+
+            int left = cx - half;
+            int top = cy - half;
+            int right = cx + half;
+            int bottom = cy + half;
+
+            if (current_player == PLAYER_X) {
+                HPEN hPen = CreatePen(PS_SOLID, 5, RGB(255, 180, 180));
+                HPEN hOldPen = SelectObject(hdc, hPen);
+                MoveToEx(hdc, left, top, NULL);
+                LineTo(hdc, right, bottom);
+                MoveToEx(hdc, right, top, NULL);
+                LineTo(hdc, left, bottom);
+                SelectObject(hdc, hOldPen);
+                DeleteObject(hPen);
+            } else if (current_player == PLAYER_O) {
+                HPEN hPen = CreatePen(PS_SOLID, 5, RGB(180, 180, 255));
+                HPEN hOldPen = SelectObject(hdc, hPen);
+                HBRUSH hOldBrush = SelectObject(hdc, GetStockObject(NULL_BRUSH));
+                Ellipse(hdc, left, top, right, bottom);
+                SelectObject(hdc, hOldBrush);
+                SelectObject(hdc, hOldPen);
+                DeleteObject(hPen);
+            }
+        }
+
         HPEN hPen = CreatePen(PS_SOLID, 3, RGB(0, 150, 255));
         HPEN hOldPen = SelectObject(hdc, hPen);
         HBRUSH hOldBrush = SelectObject(hdc, GetStockObject(NULL_BRUSH));
