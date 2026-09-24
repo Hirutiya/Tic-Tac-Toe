@@ -2,8 +2,7 @@
 #include "app.h"
 #include "game.h"
 
-void render_get_offsets(HWND hwnd, int *offsetX, int *offsetY)
-{
+void render_get_offsets(HWND hwnd, int *offsetX, int *offsetY) {
     RECT clientRect;
     GetClientRect(hwnd, &clientRect);
     int availHeight = clientRect.bottom - clientRect.top - BUTTON_AREA_HEIGHT;
@@ -11,8 +10,7 @@ void render_get_offsets(HWND hwnd, int *offsetX, int *offsetY)
     *offsetY = (availHeight - BOARD_SIZE) / 2;
 }
 
-int render_hit_test(HWND hwnd, int mouseX, int mouseY)
-{
+int render_hit_test(HWND hwnd, int mouseX, int mouseY) {
     int offsetX, offsetY;
     render_get_offsets(hwnd, &offsetX, &offsetY);
 
@@ -24,18 +22,15 @@ int render_hit_test(HWND hwnd, int mouseX, int mouseY)
     return row * 3 + col;
 }
 
-void render_board_lines(HDC hdc, int offsetX, int offsetY)
-{
+void render_board_lines(HDC hdc, int offsetX, int offsetY) {
     HPEN hPen = CreatePen(PS_SOLID, 3, RGB(0, 0, 0));
     HPEN hOldPen = SelectObject(hdc, hPen);
 
-    for (int i = 1; i <= 2; i++)
-    {
+    for (int i = 1; i <= 2; i++) {
         MoveToEx(hdc, offsetX + i * CELL_SIZE, offsetY, NULL);
         LineTo(hdc, offsetX + i * CELL_SIZE, offsetY + BOARD_SIZE);
     }
-    for (int i = 1; i <= 2; i++)
-    {
+    for (int i = 1; i <= 2; i++) {
         MoveToEx(hdc, offsetX, offsetY + i * CELL_SIZE, NULL);
         LineTo(hdc, offsetX + BOARD_SIZE, offsetY + i * CELL_SIZE);
     }
@@ -44,13 +39,10 @@ void render_board_lines(HDC hdc, int offsetX, int offsetY)
     DeleteObject(hPen);
 }
 
-void render_marks(HDC hdc, int offsetX, int offsetY)
-{
-    if (game_over && win_line[0] != -1)
-    {
+void render_marks(HDC hdc, int offsetX, int offsetY) {
+    if (game_over && win_line[0] != -1) {
         HBRUSH hHighlight = CreateSolidBrush(RGB(120, 230, 120));
-        for (int i = 0; i < 3; i++)
-        {
+        for (int i = 0; i < 3; i++) {
             int index = win_line[i];
             int row = index / 3;
             int col = index % 3;
@@ -62,8 +54,7 @@ void render_marks(HDC hdc, int offsetX, int offsetY)
         DeleteObject(hHighlight);
     }
 
-    for (int i = 0; i < 9; i++)
-    {
+    for (int i = 0; i < 9; i++) {
         if (board[i] == EMPTY)
             continue;
 
@@ -73,8 +64,7 @@ void render_marks(HDC hdc, int offsetX, int offsetY)
         int cy = offsetY + row * CELL_SIZE + CELL_SIZE / 2;
 
         int half = CELL_SIZE / 2 - 20;
-        if (anim_frames[i] > 0)
-        {
+        if (anim_frames[i] > 0) {
             int progress = anim_frames[i] * 100 / ANIM_FRAMES;
             half = half * (30 + 70 * progress / 100) / 100;
         }
@@ -84,8 +74,7 @@ void render_marks(HDC hdc, int offsetX, int offsetY)
         int right = cx + half;
         int bottom = cy + half;
 
-        if (board[i] == PLAYER_X)
-        {
+        if (board[i] == PLAYER_X) {
             HPEN hPen = CreatePen(PS_SOLID, 5, RGB(200, 0, 0));
             HPEN hOldPen = SelectObject(hdc, hPen);
             MoveToEx(hdc, left, top, NULL);
@@ -94,9 +83,7 @@ void render_marks(HDC hdc, int offsetX, int offsetY)
             LineTo(hdc, left, bottom);
             SelectObject(hdc, hOldPen);
             DeleteObject(hPen);
-        }
-        else if (board[i] == PLAYER_O)
-        {
+        } else if (board[i] == PLAYER_O) {
             HPEN hPen = CreatePen(PS_SOLID, 5, RGB(0, 0, 200));
             HPEN hOldPen = SelectObject(hdc, hPen);
             HBRUSH hOldBrush = SelectObject(hdc, GetStockObject(NULL_BRUSH));

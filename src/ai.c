@@ -2,10 +2,8 @@
 #include "ai.h"
 #include "game.h"
 
-static int find_winning_move(const char board[9], char player)
-{
-    for (int i = 0; i < 8; i++)
-    {
+static int find_winning_move(const char board[9], char player) {
+    for (int i = 0; i < 8; i++) {
         int a = WIN_PATTERNS[i][0];
         int b = WIN_PATTERNS[i][1];
         int c = WIN_PATTERNS[i][2];
@@ -20,14 +18,12 @@ static int find_winning_move(const char board[9], char player)
     return -1;
 }
 
-static int find_empty_corner(const char board[9])
-{
+static int find_empty_corner(const char board[9]) {
     const int corners[4] = {0, 2, 6, 8};
     int empty_corners[4];
     int count = 0;
 
-    for (int i = 0; i < 4; i++)
-    {
+    for (int i = 0; i < 4; i++) {
         if (board[corners[i]] == EMPTY)
             empty_corners[count++] = corners[i];
     }
@@ -38,13 +34,11 @@ static int find_empty_corner(const char board[9])
     return empty_corners[rand() % count];
 }
 
-static int ai_random_move(const char board[9])
-{
+static int ai_random_move(const char board[9]) {
     int empty[9];
     int count = 0;
 
-    for (int i = 0; i < 9; i++)
-    {
+    for (int i = 0; i < 9; i++) {
         if (board[i] == EMPTY)
             empty[count++] = i;
     }
@@ -54,8 +48,7 @@ static int ai_random_move(const char board[9])
     return empty[rand() % count];
 }
 
-int ai_simple_move(const char board[9], char ai_player, char component)
-{
+int ai_simple_move(const char board[9], char ai_player, char component) {
     int move;
 
     move = find_winning_move(board, ai_player);
@@ -76,8 +69,7 @@ int ai_simple_move(const char board[9], char ai_player, char component)
     return ai_random_move(board);
 }
 
-static int evaluate(const char board[9], char ai_player)
-{
+static int evaluate(const char board[9], char ai_player) {
     char winner = check_winner(board);
     if (winner == ai_player)
         return 1;
@@ -88,12 +80,10 @@ static int evaluate(const char board[9], char ai_player)
     return 2;
 }
 
-static int minimax(char board[9], char current_player, char ai_player, int depth)
-{
+static int minimax(char board[9], char current_player, char ai_player, int depth) {
     int score = evaluate(board, ai_player);
 
-    if (score != 2)
-    {
+    if (score != 2) {
         if (score == 1)
             return 10 - depth;
         if (score == -1)
@@ -101,13 +91,10 @@ static int minimax(char board[9], char current_player, char ai_player, int depth
         return 0;
     }
 
-    if (current_player == ai_player)
-    {
+    if (current_player == ai_player) {
         int best = -1000;
-        for (int i = 0; i < 9; i++)
-        {
-            if (board[i] == EMPTY)
-            {
+        for (int i = 0; i < 9; i++) {
+            if (board[i] == EMPTY) {
                 board[i] = current_player;
                 int val = minimax(board, (current_player == PLAYER_X) ? PLAYER_O : PLAYER_X, ai_player, depth + 1);
                 board[i] = EMPTY;
@@ -116,14 +103,10 @@ static int minimax(char board[9], char current_player, char ai_player, int depth
             }
         }
         return best;
-    }
-    else
-    {
+    } else {
         int best = 1000;
-        for (int i = 0; i < 9; i++)
-        {
-            if (board[i] == EMPTY)
-            {
+        for (int i = 0; i < 9; i++) {
+            if (board[i] == EMPTY) {
                 board[i] = current_player;
                 int val = minimax(board, (current_player == PLAYER_X) ? PLAYER_O : PLAYER_X, ai_player, depth + 1);
                 board[i] = EMPTY;
@@ -135,16 +118,13 @@ static int minimax(char board[9], char current_player, char ai_player, int depth
     }
 }
 
-int ai_minimax_move(const char board[9], char ai_player, char opponent)
-{
+int ai_minimax_move(const char board[9], char ai_player, char opponent) {
     int best_score = -1000;
     int best_move[9];
     int best_count = 0;
 
-    for (int i = 0; i < 9; i++)
-    {
-        if (board[i] == EMPTY)
-        {
+    for (int i = 0; i < 9; i++) {
+        if (board[i] == EMPTY) {
             char temp[9];
             for (int j = 0; j < 9; j++)
                 temp[j] = board[j];
@@ -152,14 +132,11 @@ int ai_minimax_move(const char board[9], char ai_player, char opponent)
             temp[i] = ai_player;
             int score = minimax(temp, opponent, ai_player, 0);
 
-            if (score > best_score)
-            {
+            if (score > best_score) {
                 best_score = score;
                 best_count = 0;
                 best_move[best_count++] = i;
-            }
-            else if (score == best_score)
-            {
+            } else if (score == best_score) {
                 best_move[best_count++] = i;
             }
         }

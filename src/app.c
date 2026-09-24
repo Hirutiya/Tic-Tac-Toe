@@ -15,53 +15,39 @@ int anim_frames[9];
 
 static StatusCallback g_status_cb = NULL;
 
-void app_set_status_callback(StatusCallback cb)
-{
+void app_set_status_callback(StatusCallback cb) {
     g_status_cb = cb;
 }
 
-static void notify_status(void)
-{
+static void notify_status(void) {
     if (!g_status_cb)
         return;
 
     char buffer[64];
-    if (game_over)
-    {
+    if (game_over) {
         g_status_cb("Game Over - Press R or click Restart");
-    }
-    else if (game_mode == MODE_PVP)
-    {
+    } else if (game_mode == MODE_PVP) {
         sprintf(buffer, "Player %c's turn", current_player);
         g_status_cb(buffer);
-    }
-    else
-    {
-        if (current_player == human_player)
-        {
+    } else {
+        if (current_player == human_player) {
             sprintf(buffer, "You are %c - Your turn", human_player);
-        }
-        else
-        {
+        } else {
             sprintf(buffer, "You are %c - Computer is thinking...", human_player);
         }
         g_status_cb(buffer);
     }
 }
 
-static void check_game_over(HWND hwnd)
-{
+static void check_game_over(HWND hwnd) {
     char winner = check_winner(board);
-    if (winner != EMPTY)
-    {
+    if (winner != EMPTY) {
         game_over = 1;
-        for (int i = 0; i < 8; i++)
-        {
+        for (int i = 0; i < 8; i++) {
             int a = WIN_PATTERNS[i][0];
             int b = WIN_PATTERNS[i][1];
             int c = WIN_PATTERNS[i][2];
-            if (board[a] != EMPTY && board[a] == board[b] && board[a] == board[c])
-            {
+            if (board[a] != EMPTY && board[a] == board[b] && board[a] == board[c]) {
                 win_line[0] = a;
                 win_line[1] = b;
                 win_line[2] = c;
@@ -71,45 +57,36 @@ static void check_game_over(HWND hwnd)
         char msg[64];
         sprintf(msg, "Player %c wins!", winner);
         MessageBoxA(hwnd, msg, "Game Over", MB_OK | MB_ICONINFORMATION);
-    }
-    else if (is_full(board))
-    {
+    } else if (is_full(board)) {
         game_over = 1;
         MessageBoxA(hwnd, "Draw!", "Game Over", MB_OK | MB_ICONINFORMATION);
     }
     notify_status();
 }
 
-static void make_ai_move(HWND hwnd)
-{
+static void make_ai_move(HWND hwnd) {
     int move = -1;
-    if (game_mode == MODE_PVE_EASY)
-    {
+    if (game_mode == MODE_PVE_EASY) {
         move = ai_simple_move(board, ai_player, human_player);
-    }
-    else if (game_mode == MODE_PVE_HARD)
-    {
+    } else if (game_mode == MODE_PVE_HARD) {
         move = ai_minimax_move(board, ai_player, human_player);
     }
 
-    if (move >= 0 && move < 9 && board[move] == EMPTY)
-    {
+    if (move >= 0 && move < 9 && board[move] == EMPTY) {
         board[move] = ai_player;
         anim_frames[move] = 1;
         SetTimer(hwnd, ANIM_TIMER_ID, ANIM_INTERVAL, NULL);
         InvalidateRect(hwnd, NULL, TRUE);
 
         check_game_over(hwnd);
-        if (!game_over)
-        {
+        if (!game_over) {
             current_player = human_player;
             notify_status();
         }
     }
 }
 
-void app_start_game(HWND hwnd, int mode, char human_side)
-{
+void app_start_game(HWND hwnd, int mode, char human_side) {
     game_mode = mode;
     human_player = human_side;
     ai_player = (human_side == PLAYER_X) ? PLAYER_O : PLAYER_X;
@@ -126,14 +103,12 @@ void app_start_game(HWND hwnd, int mode, char human_side)
 
     notify_status();
 
-    if (game_mode != MODE_PVP && ai_player == PLAYER_X)
-    {
+    if (game_mode != MODE_PVP && ai_player == PLAYER_X) {
         SetTimer(hwnd, AI_TIMER_ID, AI_THINK_DELAY, NULL);
     }
 }
 
-void app_player_move(HWND hwnd, int index)
-{
+void app_player_move(HWND hwnd, int index) {
     if (game_over)
         return;
     if (game_mode != MODE_PVP && current_player != human_player)
@@ -147,15 +122,11 @@ void app_player_move(HWND hwnd, int index)
     InvalidateRect(hwnd, NULL, TRUE);
 
     check_game_over(hwnd);
-    if (!game_over)
-    {
-        if (game_mode == MODE_PVP)
-        {
+    if (!game_over) {
+        if (game_mode == MODE_PVP) {
             current_player = (current_player == PLAYER_X) ? PLAYER_O : PLAYER_X;
             notify_status();
-        }
-        else
-        {
+        } else {
             current_player = ai_player;
             notify_status();
             SetTimer(hwnd, AI_TIMER_ID, AI_THINK_DELAY, NULL);
@@ -163,20 +134,14 @@ void app_player_move(HWND hwnd, int index)
     }
 }
 
-void app_on_animation_timer(HWND hwnd)
-{
+void app_on_animation_timer(HWND hwnd) {
     int any_active = 0;
-    for (int i = 0; i < 9; i++)
-    {
-        if (anim_frames[i] > 0)
-        {
+    for (int i = 0; i < 9; i++) {
+        if (anim_frames[i] > 0) {
             anim_frames[i]++;
-            if (anim_frames[i] > ANIM_FRAMES)
-            {
+            if (anim_frames[i] > ANIM_FRAMES) {
                 anim_frames[i] = 0;
-            }
-            else
-            {
+            } else {
                 any_active = 1;
             }
         }
@@ -186,8 +151,7 @@ void app_on_animation_timer(HWND hwnd)
     InvalidateRect(hwnd, NULL, TRUE);
 }
 
-void app_on_ai_timer(HWND hwnd)
-{
+void app_on_ai_timer(HWND hwnd) {
     KillTimer(hwnd, AI_TIMER_ID);
     make_ai_move(hwnd);
 }

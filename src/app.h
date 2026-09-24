@@ -23,6 +23,7 @@ extern int win_line[3];
 extern int anim_frames[9];
 
 typedef void (*StatusCallback)(const char *text);
+
 void app_set_status_callback(StatusCallback cb);
 
 void app_start_game(HWND hwnd, int mode, char human_side);
@@ -30,6 +31,7 @@ void app_start_game(HWND hwnd, int mode, char human_side);
 void app_player_move(HWND hwnd, int index);
 
 void app_on_animation_timer(HWND hwnd);
+
 void app_on_ai_timer(HWND hwnd);
 
 #endif

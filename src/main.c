@@ -17,196 +17,162 @@
 HWND hStatus;
 HFONT g_hStatusFont;
 
-static void on_status_changed(const char *text)
-{
+static void on_status_changed(const char *text) {
     SetWindowTextA(hStatus, text);
 }
 
-static void show_about(HWND hwnd)
-{
-    MessageBoxA(hwnd,
-                "Tic-Tac-Toe v0.7\n\n"
+static void show_about(HWND hwnd) {
+    MessageBoxA(hwnd, "Tic-Tac-Toe v0.7\n\n"
                 "A simple Tic-Tac-Toe game written in pure C.\n\n"
                 "Shortcuts:\n"
                 "- R: Restart\n"
                 "- F1: About\n\n"
                 "Author: Hirutiya\n\n"
                 "Icon: Tic tac toe icons created by Magnific - Flaticon\n"
-                "https://www.flaticon.com/free-icons/tic-tac-toe",
-                "About",
-                MB_OK | MB_ICONINFORMATION);
+                "https://www.flaticon.com/free-icons/tic-tac-toe", "About", MB_OK | MB_ICONINFORMATION);
 }
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    switch (msg)
-    {
-    case WM_CREATE:
-    {
-        hStatus = CreateWindowA("STATIC", "", WS_CHILD | WS_VISIBLE | SS_CENTER,
-                                0, 0, 0, 0, hwnd, NULL, NULL, NULL);
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case WM_CREATE: {
+            hStatus = CreateWindowA("STATIC", "", WS_CHILD | WS_VISIBLE | SS_CENTER, 0, 0, 0, 0, hwnd, NULL, NULL, NULL);
 
-        g_hStatusFont = CreateFontA(24, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
-                                    DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                                    CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Microsoft Yahei UI");
-        SendMessage(hStatus, WM_SETFONT, (WPARAM)g_hStatusFont, TRUE);
+            g_hStatusFont = CreateFontA(24, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Microsoft Yahei UI");
+            SendMessage(hStatus, WM_SETFONT, (WPARAM)g_hStatusFont, TRUE);
 
-        CreateWindowA("BUTTON", "PVP", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP,
-                      0, 0, 0, 0, hwnd, (HMENU)ID_BTN_PVP, NULL, NULL);
-        CreateWindowA("BUTTON", "Easy Mode", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
-                      0, 0, 0, 0, hwnd, (HMENU)ID_BTN_EASY, NULL, NULL);
-        CreateWindowA("BUTTON", "Hard Mode", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
-                      0, 0, 0, 0, hwnd, (HMENU)ID_BTN_HARD, NULL, NULL);
-        CreateWindowA("BUTTON", "Restart", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                      0, 0, 0, 0, hwnd, (HMENU)ID_BTN_RESTART, NULL, NULL);
+            CreateWindowA("BUTTON", "PVP", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_PVP, NULL, NULL);
+            CreateWindowA("BUTTON", "Easy Mode", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_EASY, NULL, NULL);
+            CreateWindowA("BUTTON", "Hard Mode", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_HARD, NULL, NULL);
+            CreateWindowA("BUTTON", "Restart", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 0, 0, 0, 0, hwnd, (HMENU)ID_BTN_RESTART, NULL, NULL);
 
-        CheckRadioButton(hwnd, ID_BTN_PVP, ID_BTN_HARD, ID_BTN_PVP);
+            CheckRadioButton(hwnd, ID_BTN_PVP, ID_BTN_HARD, ID_BTN_PVP);
 
-        HMENU hMenu = CreateMenu();
-        HMENU hHelpMenu = CreatePopupMenu();
-        AppendMenuA(hHelpMenu, MF_STRING, IDM_ABOUT, "About");
-        AppendMenuA(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hHelpMenu, "Help");
-        SetMenu(hwnd, hMenu);
+            HMENU hMenu = CreateMenu();
+            HMENU hHelpMenu = CreatePopupMenu();
+            AppendMenuA(hHelpMenu, MF_STRING, IDM_ABOUT, "About");
+            AppendMenuA(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hHelpMenu, "Help");
+            SetMenu(hwnd, hMenu);
 
-        app_set_status_callback(on_status_changed);
-        app_start_game(hwnd, MODE_PVP, PLAYER_X);
-        return 0;
-    }
-
-    case WM_SIZE:
-    {
-        int width = LOWORD(lParam);
-        int height = HIWORD(lParam);
-        int btnWidth = 100;
-        int btnHeight = 30;
-        int gap = 10;
-
-        MoveWindow(hStatus, 0, height - BUTTON_AREA_HEIGHT - 30, width, 30, TRUE);
-
-        int rowY = height - BUTTON_AREA_HEIGHT + 40;
-        int totalWidth = 4 * btnWidth + 3 * gap;
-        int startX = (width - totalWidth) / 2;
-        if (startX < 10)
-            startX = 10;
-
-        MoveWindow(GetDlgItem(hwnd, ID_BTN_PVP), startX, rowY, btnWidth, btnHeight, TRUE);
-        MoveWindow(GetDlgItem(hwnd, ID_BTN_EASY), startX + btnWidth + gap, rowY, btnWidth, btnHeight, TRUE);
-        MoveWindow(GetDlgItem(hwnd, ID_BTN_HARD), startX + 2 * (btnWidth + gap), rowY, btnWidth, btnHeight, TRUE);
-        MoveWindow(GetDlgItem(hwnd, ID_BTN_RESTART), startX + 3 * (btnWidth + gap), rowY, btnWidth, btnHeight, TRUE);
-        return 0;
-    }
-
-    case WM_COMMAND:
-    {
-        int id = LOWORD(wParam);
-        switch (id)
-        {
-        case ID_BTN_PVP:
+            app_set_status_callback(on_status_changed);
             app_start_game(hwnd, MODE_PVP, PLAYER_X);
-            break;
+            return 0;
+        }
 
-        case ID_BTN_EASY:
-        case ID_BTN_HARD:
-        {
-            int mode = (id == ID_BTN_EASY) ? MODE_PVE_EASY : MODE_PVE_HARD;
-            char side = human_player;
+        case WM_SIZE: {
+            int width = LOWORD(lParam);
+            int height = HIWORD(lParam);
+            int btnWidth = 100;
+            int btnHeight = 30;
+            int gap = 10;
 
-            if (game_mode == MODE_PVP)
-            {
-                int result = MessageBoxA(hwnd,
-                                         "Choose your side:\n\n"
-                                         "YES = Play as X (First)\n"
-                                         "NO  = Play as O (Second)",
-                                         "Choose Your Side",
-                                         MB_YESNO | MB_ICONQUESTION);
-                side = (result == IDYES) ? PLAYER_X : PLAYER_O;
+            MoveWindow(hStatus, 0, height - BUTTON_AREA_HEIGHT - 30, width, 30, TRUE);
+
+            int rowY = height - BUTTON_AREA_HEIGHT + 40;
+            int totalWidth = 4 * btnWidth + 3 * gap;
+            int startX = (width - totalWidth) / 2;
+            if (startX < 10)
+                startX = 10;
+
+            MoveWindow(GetDlgItem(hwnd, ID_BTN_PVP), startX, rowY, btnWidth, btnHeight, TRUE);
+            MoveWindow(GetDlgItem(hwnd, ID_BTN_EASY), startX + btnWidth + gap, rowY, btnWidth, btnHeight, TRUE);
+            MoveWindow(GetDlgItem(hwnd, ID_BTN_HARD), startX + 2 * (btnWidth + gap), rowY, btnWidth, btnHeight, TRUE);
+            MoveWindow(GetDlgItem(hwnd, ID_BTN_RESTART), startX + 3 * (btnWidth + gap), rowY, btnWidth, btnHeight, TRUE);
+            return 0;
+        }
+
+        case WM_COMMAND: {
+            int id = LOWORD(wParam);
+            switch (id) {
+                case ID_BTN_PVP:
+                    app_start_game(hwnd, MODE_PVP, PLAYER_X);
+                    break;
+
+                case ID_BTN_EASY:
+                case ID_BTN_HARD: {
+                    int mode = (id == ID_BTN_EASY) ? MODE_PVE_EASY : MODE_PVE_HARD;
+                    char side = human_player;
+
+                    if (game_mode == MODE_PVP) {
+                        int result = MessageBoxA(hwnd,
+                                                "Choose your side:\n\n"
+                                                "YES = Play as X (First)\n"
+                                                "NO  = Play as O (Second)", "Choose Your Side", MB_YESNO | MB_ICONQUESTION);
+                        side = (result == IDYES) ? PLAYER_X : PLAYER_O;
+                    }
+                    app_start_game(hwnd, mode, side);
+                    break;
+                }
+
+                case ID_BTN_RESTART:
+                    app_start_game(hwnd, game_mode, human_player);
+                    break;
+
+                case IDM_ABOUT:
+                    show_about(hwnd);
+                    break;
             }
-            app_start_game(hwnd, mode, side);
-            break;
-        }
-
-        case ID_BTN_RESTART:
-            app_start_game(hwnd, game_mode, human_player);
-            break;
-
-        case IDM_ABOUT:
-            show_about(hwnd);
-            break;
-        }
-        InvalidateRect(hwnd, NULL, TRUE);
-        return 0;
-    }
-
-    case WM_PAINT:
-    {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hwnd, &ps);
-
-        int offsetX, offsetY;
-        render_get_offsets(hwnd, &offsetX, &offsetY);
-        render_board_lines(hdc, offsetX, offsetY);
-        render_marks(hdc, offsetX, offsetY);
-
-        EndPaint(hwnd, &ps);
-        return 0;
-    }
-
-    case WM_LBUTTONDOWN:
-    {
-        int index = render_hit_test(hwnd, LOWORD(lParam), HIWORD(lParam));
-        if (index >= 0)
-            app_player_move(hwnd, index);
-        return 0;
-    }
-
-    case WM_KEYDOWN:
-    {
-        if (wParam == VK_F1)
-        {
-            show_about(hwnd);
-        }
-        else if (wParam == 'R' || wParam == 'r')
-        {
-            app_start_game(hwnd, game_mode, human_player);
             InvalidateRect(hwnd, NULL, TRUE);
+            return 0;
         }
-        return 0;
-    }
 
-    case WM_TIMER:
-    {
-        if (wParam == ANIM_TIMER_ID)
-        {
-            app_on_animation_timer(hwnd);
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd, &ps);
+
+            int offsetX, offsetY;
+            render_get_offsets(hwnd, &offsetX, &offsetY);
+            render_board_lines(hdc, offsetX, offsetY);
+            render_marks(hdc, offsetX, offsetY);
+
+            EndPaint(hwnd, &ps);
+            return 0;
         }
-        else if (wParam == AI_TIMER_ID)
-        {
-            app_on_ai_timer(hwnd);
+
+        case WM_LBUTTONDOWN: {
+            int index = render_hit_test(hwnd, LOWORD(lParam), HIWORD(lParam));
+            if (index >= 0)
+                app_player_move(hwnd, index);
+            return 0;
         }
-        return 0;
-    }
 
-    case WM_GETMINMAXINFO:
-    {
-        MINMAXINFO *mmi = (MINMAXINFO *)lParam;
-        RECT minRect = {0, 0, 460, BOARD_SIZE + BUTTON_AREA_HEIGHT + 50};
-        AdjustWindowRect(&minRect, WS_OVERLAPPEDWINDOW, FALSE);
-        mmi->ptMinTrackSize.x = minRect.right - minRect.left;
-        mmi->ptMinTrackSize.y = minRect.bottom - minRect.top;
-        return 0;
-    }
+        case WM_KEYDOWN: {
+            if (wParam == VK_F1) {
+                show_about(hwnd);
+            } else if (wParam == 'R' || wParam == 'r') {
+                app_start_game(hwnd, game_mode, human_player);
+                InvalidateRect(hwnd, NULL, TRUE);
+            }
+            return 0;
+        }
 
-    case WM_DESTROY:
-        if (g_hStatusFont)
-            DeleteObject(g_hStatusFont);
-        PostQuitMessage(0);
-        return 0;
+        case WM_TIMER: {
+            if (wParam == ANIM_TIMER_ID) {
+                app_on_animation_timer(hwnd);
+            } else if (wParam == AI_TIMER_ID) {
+                app_on_ai_timer(hwnd);
+            }
+            return 0;
+        }
+
+        case WM_GETMINMAXINFO: {
+            MINMAXINFO *mmi = (MINMAXINFO *)lParam;
+            RECT minRect = {0, 0, 460, BOARD_SIZE + BUTTON_AREA_HEIGHT + 50};
+            AdjustWindowRect(&minRect, WS_OVERLAPPEDWINDOW, FALSE);
+            mmi->ptMinTrackSize.x = minRect.right - minRect.left;
+            mmi->ptMinTrackSize.y = minRect.bottom - minRect.top;
+            return 0;
+        }
+
+        case WM_DESTROY:
+            if (g_hStatusFont)
+                DeleteObject(g_hStatusFont);
+            PostQuitMessage(0);
+            return 0;
     }
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-{
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     (void)hPrevInstance;
     (void)lpCmdLine;
 
@@ -222,14 +188,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.style = CS_HREDRAW | CS_VREDRAW;
-    wc.hIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_APP_ICON),
-                                IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
-    wc.hIconSm = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_APP_ICON),
-                                  IMAGE_ICON, GetSystemMetrics(SM_CXSMICON),
-                                  GetSystemMetrics(SM_CYSMICON), LR_SHARED);
+    wc.hIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_APP_ICON), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+    wc.hIconSm = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_APP_ICON), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_SHARED);
 
-    if (!RegisterClassEx(&wc))
-    {
+    if (!RegisterClassEx(&wc)) {
         MessageBox(NULL, "Window Registration Failed!", "Error", MB_ICONERROR);
         return 0;
     }
@@ -237,13 +199,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     RECT rect = {0, 0, 700, 650};
     AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
 
-    HWND hwnd = CreateWindowEx(0, CLASS_NAME, "Tic-Tac-Toe",
-                               WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-                               rect.right - rect.left, rect.bottom - rect.top,
-                               NULL, NULL, hInstance, NULL);
+    HWND hwnd = CreateWindowEx(0, CLASS_NAME, "Tic-Tac-Toe", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, rect.right - rect.left, rect.bottom - rect.top, NULL, NULL, hInstance, NULL);
 
-    if (hwnd == NULL)
-    {
+    if (hwnd == NULL) {
         MessageBox(NULL, "Window Creation Failed!", "Error", MB_ICONERROR);
         return 0;
     }
@@ -253,11 +211,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     SetForegroundWindow(hwnd);
 
     MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0))
-    {
+    while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-
     return 0;
 }
