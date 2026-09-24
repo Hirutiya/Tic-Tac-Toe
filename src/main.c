@@ -31,12 +31,13 @@ static void on_score_changed(int x, int o, int draw) {
 }
 
 static void show_about(HWND hwnd) {
-    MessageBoxA(hwnd, "Tic-Tac-Toe v0.7\n\n"
-                "A simple Tic-Tac-Toe game written in pure C.\n\n"
-                "Shortcuts:\n"
-                "- R: Restart\n"
-                "- F1: About\n\n"
-                "Author: Hirutiya\n\n"
+    MessageBoxA(hwnd, "Tic-Tac-Toe v0.8.2\n\n"
+                "Author: Hirutiya\n\n\n"
+                "Keyboard Hotkeys:\n"
+                "  Arrow Keys    - Move cursor\n"
+                "  Enter / Space - Place piece\n\n"
+                "  R - Restart game\n"
+                "  F1 - About\n\n\n\n"
                 "Icon: Tic tac toe icons created by Magnific - Flaticon\n"
                 "https://www.flaticon.com/free-icons/tic-tac-toe", "About", MB_OK | MB_ICONINFORMATION);
 }
@@ -67,9 +68,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             SetMenu(hwnd, hMenu);
 
             app_set_status_callback(on_status_changed);
-            app_start_game(hwnd, MODE_PVP, PLAYER_X);
-            app_set_status_callback(on_status_changed);
             app_set_score_callback(on_score_changed);
+            app_start_game(hwnd, MODE_PVP, PLAYER_X);
             return 0;
         }
 
