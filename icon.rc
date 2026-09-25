@@ -1,1 +1,33 @@
+#include <windows.h>
+
 201 ICON "icon.ico"
+
+5001 DIALOGEX 0, 0, 240, 220
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Tic-Tac-Toe"
+FONT 10, "Segoe UI"
+BEGIN
+    LTEXT           "Choose mode:", -1, 15, 10, 200, 10
+
+    CONTROL         "Player vs Player", 3001, "Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP, 20, 25, 200, 12
+    CONTROL         "Player vs Computer (Easy Mode)", 3002, "Button",
+                    BS_AUTORADIOBUTTON, 20, 42, 200, 12
+    CONTROL         "Player vs Computer (Hard Mode)", 3003, "Button",
+                    BS_AUTORADIOBUTTON, 20, 59, 200, 12
+
+    LTEXT           "Your side (PvE only):", -1, 15, 80, 200, 10
+
+    CONTROL         "X (First)", 3011, "Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP, 20, 95, 100, 12
+    CONTROL         "O (Second)", 3012, "Button",
+                    BS_AUTORADIOBUTTON, 130, 95, 100, 12
+
+    LTEXT           "Shortcuts:", -1, 15, 120, 200, 10
+    LTEXT           "Arrow Keys - Move cursor", -1, 25, 135, 200, 10
+    LTEXT           "Enter / Space - Place piece", -1, 25, 148, 200, 10
+    LTEXT           "R - Restart,  F1 - About", -1, 25, 161, 200, 10
+
+    DEFPUSHBUTTON   "Start", 1, 60, 190, 50, 15
+    PUSHBUTTON      "Quit", 2, 130, 190, 50, 15
+END

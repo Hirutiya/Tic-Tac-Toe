@@ -14,11 +14,20 @@
 #define ID_BTN_RESTART 104
 
 #define IDM_ABOUT 2001
+#define IDD_MAIN_MENU  5001
+#define IDC_RADIO_PVP  3001
+#define IDC_RADIO_EASY 3002
+#define IDC_RADIO_HARD 3003
+#define IDC_RADIO_X    3011
+#define IDC_RADIO_O    3012
 
 HWND hStatus;
 HFONT g_hStatusFont;
 HWND hScore;
 HFONT g_hScoreFont;
+
+static int g_initial_mode = MODE_PVP;
+static char g_initial_side = PLAYER_X;
 
 static void on_status_changed(const char *text) {
     SetWindowTextA(hStatus, text);
@@ -28,6 +37,53 @@ static void on_score_changed(int x, int o, int draw) {
     char buffer[64];
     sprintf(buffer, "X: %d    O: %d    Draw: %d", x, o, draw);
     SetWindowTextA(hScore, buffer);
+}
+
+INT_PTR CALLBACK MainMenuProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    (void)lParam;
+
+    switch (msg) {
+        case WM_INITDIALOG:
+            CheckRadioButton(hDlg, IDC_RADIO_PVP, IDC_RADIO_HARD, IDC_RADIO_PVP);
+            CheckRadioButton(hDlg, IDC_RADIO_X, IDC_RADIO_O, IDC_RADIO_X);
+            EnableWindow(GetDlgItem(hDlg, IDC_RADIO_X), FALSE);
+            EnableWindow(GetDlgItem(hDlg, IDC_RADIO_O), FALSE);
+            return TRUE;
+
+        case WM_COMMAND:
+            switch (LOWORD(wParam)) {
+                case IDC_RADIO_PVP:
+                    EnableWindow(GetDlgItem(hDlg, IDC_RADIO_X), FALSE);
+                    EnableWindow(GetDlgItem(hDlg, IDC_RADIO_O), FALSE);
+                    return TRUE;
+
+                case IDC_RADIO_EASY:
+                case IDC_RADIO_HARD:
+                    EnableWindow(GetDlgItem(hDlg, IDC_RADIO_X), TRUE);
+                    EnableWindow(GetDlgItem(hDlg, IDC_RADIO_O), TRUE);
+                    return TRUE;
+
+                case IDOK:
+                    if (IsDlgButtonChecked(hDlg, IDC_RADIO_PVP)) {
+                        g_initial_mode = MODE_PVP;
+                        g_initial_side = PLAYER_X;
+                    } else if (IsDlgButtonChecked(hDlg, IDC_RADIO_EASY)) {
+                        g_initial_mode = MODE_PVE_EASY;
+                        g_initial_side = IsDlgButtonChecked(hDlg, IDC_RADIO_X) ? PLAYER_X : PLAYER_O;
+                    } else {
+                        g_initial_mode = MODE_PVE_HARD;
+                        g_initial_side = IsDlgButtonChecked(hDlg, IDC_RADIO_X) ? PLAYER_X : PLAYER_O;
+                    }
+                    EndDialog(hDlg, IDOK);
+                    return TRUE;
+
+                case IDCANCEL:
+                    EndDialog(hDlg, IDCANCEL);
+                    return TRUE;
+            }
+            return FALSE;
+    }
+    return FALSE;
 }
 
 static void show_about(HWND hwnd) {
@@ -69,7 +125,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
             app_set_status_callback(on_status_changed);
             app_set_score_callback(on_score_changed);
-            app_start_game(hwnd, MODE_PVP, PLAYER_X);
+
+            int radioId = (g_initial_mode == MODE_PVP) ? ID_BTN_PVP : (g_initial_mode == MODE_PVE_EASY) ? ID_BTN_EASY : ID_BTN_HARD;
+            CheckRadioButton(hwnd, ID_BTN_PVP, ID_BTN_HARD, radioId);
+
+            app_start_game(hwnd, g_initial_mode, g_initial_side);
+
             return 0;
         }
 
@@ -237,6 +298,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     if (!RegisterClassEx(&wc)) {
         MessageBox(NULL, "Window Registration Failed!", "Error", MB_ICONERROR);
+        return 0;
+    }
+
+    INT_PTR dlgResult = DialogBox(hInstance, MAKEINTRESOURCE(IDD_MAIN_MENU), NULL, MainMenuProc);
+
+    if (dlgResult == IDCANCEL) {
         return 0;
     }
 
