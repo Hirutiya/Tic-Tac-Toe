@@ -2,6 +2,15 @@
 
 A simple Tic-Tac-Toe game written in pure C for Windows.
 
+## How to Play
+
+1. Download **TicTacToe.exe** from the [latest release](https://github.com/Hirutiya/Tic-Tac-Toe/releases/latest).
+2. Double-click to play. No installation required.
+
+### System Requirements
+
+- Windows 10 or later (64-bit)
+
 ## Build
 
 ### Prerequisites
@@ -20,13 +29,13 @@ windres icon.rc -o icon.o
 
 2. Compile the application
 ```bash
-gcc -Wall -Wextra -std=c11 -mwindows -static src/main.c src/app.c src/render.c src/game.c src/ai.c icon.o -o tic_tac_toe.exe -lgdi32 -luser32
+gcc -Wall -Wextra -std=c11 -mwindows -static src/main.c src/app.c src/render.c src/game.c src/ai.c icon.o -o Tic-Tac-Toe.exe -lgdi32 -luser32
 ```
 
 ### Run
 
 ```bash
-./tic_tac_toe.exe
+./Tic-Tac-Toe.exe
 ```
 
 ## Credits
