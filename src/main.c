@@ -87,7 +87,7 @@ INT_PTR CALLBACK MainMenuProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 static void show_about(HWND hwnd) {
-    MessageBoxA(hwnd, "Tic-Tac-Toe v0.9\n\n"
+    MessageBoxA(hwnd, "Tic-Tac-Toe v1.0\n\n"
                 "Author: Hirutiya\n"
                 "GitHub Repository: https://github.com/Hirutiya/Tic-Tac-Toe\n\n\n"
                 "Keyboard Hotkeys:\n"
@@ -95,7 +95,7 @@ static void show_about(HWND hwnd) {
                 "  Enter / Space - Place piece\n\n"
                 "  R - Restart game\n"
                 "  F1 - About\n\n\n\n"
-                "Icon: Tic tac toe icons created by Magnific - Flaticon\n"
+                "Icon: Tic-Tac-Toe icons created by Magnific - Flaticon\n"
                 "https://www.flaticon.com/free-icons/tic-tac-toe", "About", MB_OK | MB_ICONINFORMATION);
 }
 
