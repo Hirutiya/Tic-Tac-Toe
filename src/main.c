@@ -87,8 +87,9 @@ INT_PTR CALLBACK MainMenuProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 static void show_about(HWND hwnd) {
-    MessageBoxA(hwnd, "Tic-Tac-Toe v0.8.2\n\n"
-                "Author: Hirutiya\n\n\n"
+    MessageBoxA(hwnd, "Tic-Tac-Toe v0.9\n\n"
+                "Author: Hirutiya\n"
+                "GitHub Repository: https://github.com/Hirutiya/Tic-Tac-Toe\n\n\n"
                 "Keyboard Hotkeys:\n"
                 "  Arrow Keys    - Move cursor\n"
                 "  Enter / Space - Place piece\n\n"
